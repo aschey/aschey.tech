@@ -1,0 +1,6 @@
+{
+    "rewrites": [
+        {"source": "/tokei/:match*", "destination": "https://tokei-vercel.vercel.app/tokei/:match*"},
+        {"source": "/nfl/:match*", "destination": "https://nfl-misery-index.vercel.app/nfl-misery-index/:match*"}
+    ]
+}
