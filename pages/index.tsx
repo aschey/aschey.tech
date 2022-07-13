@@ -1,11 +1,14 @@
 import type { NextPage } from 'next';
 import { Canvas } from '@react-three/fiber';
 import { Contour } from '../components/Contour';
+import { useRef } from 'react';
 
 const Home: NextPage = () => {
+  const canvasRef = useRef<HTMLCanvasElement>(null!);
+
   return (
-    <Canvas style={{ width: '100vw', height: '100vh' }}>
-      <Contour />
+    <Canvas ref={canvasRef} style={{ width: '100vw', height: '100vh' }}>
+      <Contour canvasRef={canvasRef} />
     </Canvas>
   );
 };
