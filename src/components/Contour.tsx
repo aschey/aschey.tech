@@ -1,6 +1,6 @@
-import { useFrame } from '@react-three/fiber';
-import { Vector3 } from 'three';
-import { MutableRefObject, useRef } from 'react';
+import { useFrame } from "@react-three/fiber";
+import { Vector3 } from "three";
+import { MutableRefObject, useRef } from "react";
 
 interface ContourProps {
   canvasRef: MutableRefObject<HTMLCanvasElement>;
@@ -10,9 +10,9 @@ export const Contour: React.FC<ContourProps> = ({ canvasRef }) => {
   const ref = useRef<THREE.ShaderMaterial>(null!);
 
   useFrame((_, delta) => {
-    ref.current.uniforms['iResolution'].value.x = canvasRef.current.width;
-    ref.current.uniforms['iResolution'].value.y = canvasRef.current.height;
-    ref.current.uniforms['iTime'].value += delta;
+    ref.current.uniforms["iResolution"].value.x = canvasRef.current.width;
+    ref.current.uniforms["iResolution"].value.y = canvasRef.current.height;
+    ref.current.uniforms["iTime"].value += delta;
   });
 
   const shader = `
@@ -119,7 +119,7 @@ void main()
       <boxGeometry args={[100, 100]} />
       <shaderMaterial
         ref={ref}
-        attach='material'
+        attach="material"
         fragmentShader={shader}
         uniforms={{
           iTime: { value: 0 },

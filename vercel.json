@@ -1,9 +1,32 @@
 {
-    "rewrites": [
-        {"source": "/tokei/:match*", "destination": "https://vercel-tokei.vercel.app/tokei/:match*"},
-        {"source": "/nfl", "destination": "https://nfl-misery-index.vercel.app/nfl"},
-        {"source": "/nfl/:match*", "destination": "https://nfl-misery-index.vercel.app/nfl/:match*"},
-        {"source": "/bubbleprompt", "destination": "https://bubbleprompt.vercel.app"},
-        {"source": "/bubbleprompt/:match*", "destination": "https://bubbleprompt.vercel.app/:match*"}
-    ]
+  "rewrites": [
+    {
+      "source": "/tokei/:match*",
+      "destination": "https://vercel-tokei.vercel.app/tokei/:match*"
+    },
+    {
+      "source": "/nfl",
+      "destination": "https://nfl-misery-index.vercel.app/nfl"
+    },
+    {
+      "source": "/nfl/:match*",
+      "destination": "https://nfl-misery-index.vercel.app/nfl/:match*"
+    },
+    {
+      "source": "/bubbleprompt",
+      "destination": "https://bubbleprompt.vercel.app"
+    },
+    {
+      "source": "/bubbleprompt/:match*",
+      "destination": "https://bubbleprompt.vercel.app/:match*"
+    },
+    {
+      "source": "/art",
+      "destination": "https://generative-art-lac.vercel.app"
+    },
+    {
+      "source": "/art/:match*",
+      "destination": "https://generative-art-lac.vercel.app/:match*"
+    }
+  ]
 }
