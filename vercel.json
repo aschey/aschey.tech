@@ -1,6 +1,10 @@
 {
   "rewrites": [
     {
+      "source": "/tokei",
+      "destination": "https://vercel-tokei.vercel.app/tokei"
+    },
+    {
       "source": "/tokei/:match*",
       "destination": "https://vercel-tokei.vercel.app/tokei/:match*"
     },
