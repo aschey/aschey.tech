@@ -97,7 +97,7 @@ export default function Home() {
                 }}
               >
                 <Link href="https://github.com/aschey" title="GitHub">
-                  <SiGithub color="#eb51fc" title="GitHub" />
+                  <SiGithub color="#d059ee" title="GitHub" />
                 </Link>
                 <Link
                   href="https://linkedin.com/in/austin-schey"
@@ -110,7 +110,7 @@ export default function Home() {
                   />
                 </Link>
                 <Link href="mailto:aschey13@gmail.com" title="Email">
-                  <SiGmail color="#88fa5f" title="Email" />
+                  <SiGmail color="#e03e3e" title="Email" />
                 </Link>
               </div>
             </div>
