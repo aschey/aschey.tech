@@ -75,7 +75,7 @@ export default function Home() {
                   // height={100}
 
                   fill
-                  // blurDataURL="data:..." automatically provided
+                  blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mO8//p1PQAInAM2vQ3nBwAAAABJRU5ErkJggg=="
                   placeholder="blur" // Optional blur-up while loading
                 />
               </div>
