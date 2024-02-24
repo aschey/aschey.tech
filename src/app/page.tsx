@@ -92,7 +92,11 @@ export default function Home() {
                 }}
               >
                 <Link href="https://github.com/aschey" title="GitHub">
-                  <SiGithub color="#d059ee" title="GitHub" />
+                  <SiGithub
+                    color="#d059ee"
+                    title="GitHub"
+                    style={{ transform: "scale(95%)" }}
+                  />
                 </Link>
                 <Link
                   href="https://linkedin.com/in/austin-schey"
@@ -101,11 +105,19 @@ export default function Home() {
                   <SiLinkedin
                     color="#5bedf5"
                     title="LinkedIn"
-                    style={{ borderRadius: "5px" }}
+                    style={{
+                      borderRadius: "5px",
+                      transform: "scale(95%)",
+                      marginRight: "3px",
+                    }}
                   />
                 </Link>
                 <Link href="mailto:aschey13@gmail.com" title="Email">
-                  <SiGmail color="#e03e3e" title="Email" />
+                  <SiGmail
+                    color="#e03e3e"
+                    title="Email"
+                    style={{ transform: "scale(105%)" }}
+                  />
                 </Link>
               </div>
             </div>
