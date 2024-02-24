@@ -71,12 +71,7 @@ export default function Home() {
                   src={pic}
                   alt="Picture of the author"
                   style={{ borderRadius: "50%" }}
-                  // width={100}
-                  // height={100}
-
                   fill
-                  blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mO8//p1PQAInAM2vQ3nBwAAAABJRU5ErkJggg=="
-                  placeholder="blur" // Optional blur-up while loading
                 />
               </div>
 
