@@ -130,7 +130,7 @@ export default function Home() {
               fontSize: "22px",
             }}
           >
-            Hi, I&apos;m a full-stack developer based in Chicago, IL.
+            Hi, I&apos;m a full-stack developer based in Seattle, WA.
           </div>
         </div>
       </div>
