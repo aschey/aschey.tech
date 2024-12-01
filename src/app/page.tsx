@@ -69,9 +69,11 @@ export default function Home() {
               >
                 <Image
                   src={pic}
+                  sizes={"7.5em"}
                   alt="Picture of the author"
                   style={{ borderRadius: "50%" }}
                   fill
+                  priority
                 />
               </div>
 

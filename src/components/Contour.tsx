@@ -1,5 +1,5 @@
 import { useFrame } from "@react-three/fiber";
-import { Vector3 } from "three";
+import { ShaderMaterial, Vector3 } from "three";
 import { MutableRefObject, useEffect, useRef, useState } from "react";
 
 interface ContourProps {
@@ -7,13 +7,13 @@ interface ContourProps {
 }
 
 export const Contour: React.FC<ContourProps> = ({ canvasRef }) => {
-  const ref = useRef<THREE.ShaderMaterial>(null!);
+  const ref = useRef<ShaderMaterial>(null!);
 
   const [fragShader, setFragShader] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     fetch("/shaders/contour.frag").then(async (s) =>
-      setFragShader(await s.text())
+      setFragShader(await s.text()),
     );
   });
 
@@ -39,7 +39,7 @@ export const Contour: React.FC<ContourProps> = ({ canvasRef }) => {
               value: new Vector3(
                 canvasRef.current.width,
                 canvasRef.current.height,
-                0
+                0,
               ),
             },
           }}
