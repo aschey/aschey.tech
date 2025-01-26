@@ -95,7 +95,7 @@ export default function Home() {
               >
                 <Link href="https://github.com/aschey" title="GitHub">
                   <SiGithub
-                    color="#d059ee"
+                    color="white"
                     title="GitHub"
                     style={{ transform: "scale(95%)" }}
                   />
@@ -104,19 +104,26 @@ export default function Home() {
                   href="https://linkedin.com/in/austin-schey"
                   title="LinkedIn"
                 >
-                  <SiLinkedin
-                    color="#5bedf5"
-                    title="LinkedIn"
+                  <div
                     style={{
-                      borderRadius: "5px",
+                      display: "flex",
+                      backgroundColor: "white",
                       transform: "scale(95%)",
                       marginRight: "3px",
                     }}
-                  />
+                  >
+                    <SiLinkedin
+                      color="#0a66c2"
+                      title="LinkedIn"
+                      style={{
+                        transform: "scale(105%)",
+                      }}
+                    />
+                  </div>
                 </Link>
                 <Link href="mailto:aschey13@gmail.com" title="Email">
                   <SiGmail
-                    color="#e03e3e"
+                    color="#C5221F"
                     title="Email"
                     style={{ transform: "scale(105%)" }}
                   />
