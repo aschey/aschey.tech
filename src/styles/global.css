@@ -1,0 +1,18 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: 'NunitoSans';
+  src: url('/fonts/NunitoSans.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@theme {
+  --font-sans: 'NunitoSans', 'sans-serif';
+  --shadow-card: 4.0px 8.0px 8.0px hsl(0deg 0% 0% / 0.38);
+  --color-background: rgb(17, 17, 17);
+  --color-border-muted: rgb(40, 40, 40);
+  --color-primary: #dfebeb;
+}
+

@@ -1,6 +1,6 @@
-varying vec3 Normal;
 uniform float iTime;
-uniform vec3 iResolution;
+uniform vec2 iResolution;
+varying vec2 vPosition;
 
 float wave(float x, float y) 
 {
@@ -21,21 +21,19 @@ vec2 hash(vec2 p)
 	return -1.0 + 2.0 * fract(sin(p) * 43758.5453123);
 }
 
-
-
 float noise( in vec2 p )
 {
     const float K1 = 0.366025404; // (sqrt(3)-1)/2;
     const float K2 = 0.211324865; // (3-sqrt(3))/6;
 
-	vec2  i = floor( p + (p.x+p.y)*K1 );
+    vec2  i = floor( p + (p.x+p.y)*K1 );
     vec2  a = p - i + (i.x+i.y)*K2;
     float m = step(a.y,a.x); 
     vec2  o = vec2(m,1.0-m);
     vec2  b = a - o + K2;
-	vec2  c = a - 1.0 + 2.0*K2;
+    vec2  c = a - 1.0 + 2.0*K2;
     vec3  h = max( 0.5-vec3(dot(a,a), dot(b,b), dot(c,c) ), 0.0 );
-	vec3  n = h*h*h*h*vec3( dot(a,hash(i+0.0)), dot(b,hash(i+o)), dot(c,hash(i+1.0)));
+    vec3  n = h*h*h*h*vec3( dot(a,hash(i+0.0)), dot(b,hash(i+o)), dot(c,hash(i+1.0)));
     return dot( n, vec3(70.0) );
 }
 
@@ -54,7 +52,10 @@ float fractalNoise(in vec2 uv)
 void main()
 {
     // Normalized pixel coordinates (from 0 to 1)
-    vec2 uv = gl_FragCoord.xy / iResolution.xy;
+    vec2 uv = vPosition; 
+
+    // uv +=vec2(iTime/250.0, -iTime/250.0);
+    // uv.x *= x_mult;
    // uv.x *= iResolution.x/iResolution.y;
     //uv *= 0.9;
     float t = smoothstep(0., 200.,iTime);
