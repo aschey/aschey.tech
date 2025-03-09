@@ -1,7 +1,7 @@
 {
   "rewrites": [
     {
-      "source": "/tokei",
+      "source": "/tokei{/}?",
       "destination": "https://vercel-tokei.vercel.app/tokei"
     },
     {
@@ -9,7 +9,7 @@
       "destination": "https://vercel-tokei.vercel.app/tokei/:match*"
     },
     {
-      "source": "/nfl",
+      "source": "/nfl{/}?",
       "destination": "https://nfl-misery-index.vercel.app/nfl"
     },
     {
@@ -17,7 +17,7 @@
       "destination": "https://nfl-misery-index.vercel.app/nfl/:match*"
     },
     {
-      "source": "/bubbleprompt",
+      "source": "/bubbleprompt{/}?",
       "destination": "https://bubbleprompt.vercel.app"
     },
     {
@@ -25,7 +25,7 @@
       "destination": "https://bubbleprompt.vercel.app/:match*"
     },
     {
-      "source": "/art",
+      "source": "/art{/}?",
       "destination": "https://generative-art-lac.vercel.app"
     },
     {
