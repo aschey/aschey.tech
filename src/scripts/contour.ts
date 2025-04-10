@@ -12,10 +12,7 @@ const hexToRgb = (hex: string) => {
     hex = hex.replace(shorthandRegex, function (_m, r: string, g: string, b: string) {
         return r + r + g + g + b + b;
     });
-
     let result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex) || "";
-
-
     return `rgb(${parseInt(result[1], 16)},${parseInt(result[2], 16)},${parseInt(result[3], 16)})`;
 }
 
@@ -23,14 +20,12 @@ const getColorVector = (isDark: boolean) => {
     let styles = getComputedStyle(document.documentElement);
     let styleName = isDark ? "--color-dark-background" : "--color-background";
     let style = styles.getPropertyValue(styleName);
-    console.log(style);
     if (style.startsWith('#')) {
+        // tailwind converts rgb values to hex in release mode
         style = hexToRgb(style);
     }
-    console.log(style);
     const re = /rgb\((\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)/;
     const groups = style.match(re)!;
-    console.log(groups);
     return new Vector3(parseInt(groups[1]), parseInt(groups[2]), parseInt(groups[3]))
 }
 
