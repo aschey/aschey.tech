@@ -1,5 +1,7 @@
 uniform float iTime;
 uniform vec2 iResolution;
+uniform vec3 bgColor;
+uniform float colorMult;
 varying vec2 vPosition;
 
 float wave(float x, float y) 
@@ -17,8 +19,8 @@ float wave(float x, float y)
 
 vec2 hash(vec2 p)
 {
-	p = vec2( dot(p,vec2(127.1,311.7)), dot(p,vec2(269.5,183.3)) );
-	return -1.0 + 2.0 * fract(sin(p) * 43758.5453123);
+    p = vec2( dot(p,vec2(127.1,311.7)), dot(p,vec2(269.5,183.3)) );
+    return -1.0 + 2.0 * fract(sin(p) * 43758.5453123);
 }
 
 float noise( in vec2 p )
@@ -78,7 +80,7 @@ void main()
     d = d/fwidth(z);
     d = smoothstep(-1.,1., d);
     vec3 rgb=vec3(d);
-    rgb =((1.-rgb)*.3)+(vec3(17, 17, 17)/255.*1.);
+    rgb =colorMult*((1.-rgb)*.3)+(bgColor/255.*1.);
     
      //rgb = rgb* vec3(15, 19, 61)/255.;
 

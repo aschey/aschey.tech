@@ -1,0 +1,17 @@
+---
+import "../styles/global.css";
+import BaseHead from "../components/BaseHead.astro";
+import ThemeIcon from "../components/ThemeIcon.astro";
+---
+
+<html lang="en">
+  <head>
+    <BaseHead title="Austin Schey" description="Austin Schey's personal site" />
+  </head>
+  <body
+    class="text-primary dark:text-dark-primary bg-background dark:bg-dark-background"
+  >
+    <ThemeIcon />
+    <slot />
+  </body>
+</html>

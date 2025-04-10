@@ -7,12 +7,14 @@ import LinkedIn from "../../assets/linkedin.svg";
 import GMail from "../../assets/gmail.svg";
 ---
 
-<div class="fixed flex w-full h-[80%] z-10 justify-center items-center">
+<div
+  class="fixed flex flex-col w-full h-full md:h-[80%] z-10 justify-center items-center"
+>
   <div
-    class="bg-background flex flex-row rounded-md w-[min(500px,90vw)] p-6 border-border-muted border-4 shadow-card"
+    class="bg-background dark:bg-dark-background flex flex-col md:flex-row items-center md:items-start rounded-md w-[min(48rem,90vw)] p-6 border-border-muted border-4 shadow-card"
   >
-    <div class="flex flex-col w-1/2 items-center">
-      <div class="flex flex-col items-center h-full gap-2">
+    <div class="flex flex-col w-full md:w-1/3 items-center">
+      <div class="flex flex-col items-center justify-center h-full gap-2 pb-2">
         <Image
           src={me}
           width={120}
@@ -25,32 +27,42 @@ import GMail from "../../assets/gmail.svg";
         <div class="flex flex-row gap-2">
           <Link href="https://github.com/aschey" title="GitHub">
             <GitHub
-              fill="white"
-              title="GitHub"
+              aria-label="GitHub"
               width={24}
               height={24}
-              class="transform-[scale(95%)]"
+              class="transform-[scale(95%)] dark:fill-white"
             />
           </Link>
           <div class="flex bg-white transform-[scale(95%)] mr-0.5">
             <Link href="https://linkedin.com/in/austin-schey" title="LinkedIn">
               <LinkedIn
-                fill="#0a66c2"
-                title="LinkedIn"
+                aria-label="LinkedIn"
                 width={24}
                 height={24}
-                class="transform-[scale(105%)]"
+                class="transform-[scale(105%)] fill-[#0a66c2]"
               />
             </Link>
           </div>
           <Link href="mailto:aschey13@gmail.com" title="Email">
-            <GMail fill="#C5221F" title="Email" width={24} height={24} />
+            <GMail
+              class="fill-[#C5221F]"
+              aria-label="Email"
+              width={24}
+              height={24}
+            />
           </Link>
         </div>
       </div>
     </div>
-    <div class="w-1/2 flex flex-col text-xl lg:text-2xl">
-      Hi, I&apos;m a full-stack developer based in Seattle, WA.
-    </div>
+    <p class="w-full md:w-2/3 text-xl md:text-2xl prose dark:prose-invert">
+      Hi, I&apos;m a full-stack developer based in Seattle, WA. I work in
+      government services at <a href="https://forpeople.us">For People</a> by day
+      and in my spare time I contribute to the Rust ecosystem. <br /><br /> My primary
+      interests are <a
+        href="https://en.wikipedia.org/wiki/Text-based_user_interface">TUIs</a
+      > and audio applications. Occasionally I make <a
+        href="https://en.wikipedia.org/wiki/Generative_art">generative art</a
+      >.
+    </p>
   </div>
 </div>

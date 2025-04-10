@@ -5,5 +5,9 @@ import { canvasId } from "../scripts/contourConsts";
 <script src="../scripts/contour.ts"></script>
 
 <div>
-  <canvas id={canvasId} class="w-full h-full fixed bg-background z-0"></canvas>
+  <canvas
+    id={canvasId}
+    class="w-full h-full fixed bg-background dark:bg-dark-background z-0 motion-reduce:hidden"
+  >
+  </canvas>
 </div>

@@ -1,4 +1,7 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@custom-variant dark (&:where(.dark, .dark *));
 
 @font-face {
   font-family: 'NunitoSans';
@@ -11,8 +14,22 @@
 @theme {
   --font-sans: 'NunitoSans', 'sans-serif';
   --shadow-card: 4.0px 8.0px 8.0px hsl(0deg 0% 0% / 0.38);
-  --color-background: rgb(17, 17, 17);
+  
+  --color-background: rgb(200, 200, 200);
+  --color-dark-background: rgb(17, 17, 17);
+  
   --color-border-muted: rgb(40, 40, 40);
-  --color-primary: #dfebeb;
+  --color-dark-border-muted: rgb(40, 40, 40);
+  
+  --color-primary: black;
+  --color-dark-primary: #dfebeb;
+ }
+
+.prose {
+  --tw-prose-headings: var(--color-primary);
+}
+
+.dark .prose {
+ --tw-prose-headings: var(--color-dark-primary); 
 }
 
