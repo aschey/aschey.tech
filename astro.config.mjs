@@ -10,11 +10,8 @@ import mdx from "@astrojs/mdx";
 export default defineConfig({
   site: "https://aschey.tech",
   integrations: [sitemap(), mdx()],
-  experimental: {
-    svg: true,
-  },
-
   vite: {
     plugins: [tailwindcss()],
   },
 });
+
