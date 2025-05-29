@@ -1,0 +1,48 @@
+---
+import Bars from "../../assets/bars.svg";
+import ThemeIcon from "./ThemeIcon.astro";
+import Title from "./Title.astro";
+---
+
+<script>
+  const toggleMenu = () => {
+    let links = document.getElementById("navLinks")!;
+    if (links.classList.contains("-translate-x-full")) {
+      links.classList.remove("-translate-x-full");
+    } else {
+      links.classList.add("-translate-x-full");
+    }
+  };
+
+  const hideMenu = (event: any) => {
+    const hamburger = document.getElementById("hamburger")!;
+    if (!hamburger.contains(event.target)) {
+      let links = document.getElementById("navLinks")!;
+      links.classList.add("-translate-x-full");
+    }
+  };
+  document
+    .getElementById("toggleButton")
+    ?.addEventListener("click", toggleMenu);
+  document.addEventListener("click", hideMenu);
+</script>
+
+<div class="flex flex-col p-1" id="hamburger">
+  <button id="toggleButton" class="w-full h-full cursor-pointer">
+    <Bars class="pointer-events-none" width="40px" height="40px" />
+  </button>
+  <div
+    id="navLinks"
+    class="text-xl z-30 absolute left-0 top-0 bg-background dark:bg-dark-background border border-gray-500 p-4 transition-transform -translate-x-full"
+  >
+    <header
+      class="flex flex-row items-center border-b pb-1 border-b-blue-900 dark:border-b-cyan-400"
+    >
+      <Title textSize="text-base" underline={false} />
+      <ThemeIcon />
+    </header>
+    <div class="pt-3">
+      <slot />
+    </div>
+  </div>
+</div>

@@ -11,8 +11,17 @@
   font-display: swap;
 }
 
+@font-face {
+  font-family: 'MartianMono';
+  src: url('/fonts/MartianMono.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 @theme {
   --font-sans: 'NunitoSans', 'sans-serif';
+  --font-mono: 'MartianMono', 'monospace';
   --shadow-card: 4.0px 8.0px 8.0px hsl(0deg 0% 0% / 0.38);
   
   --color-background: rgb(200, 200, 200);
@@ -21,12 +30,16 @@
   --color-border-muted: rgb(40, 40, 40);
   --color-dark-border-muted: rgb(40, 40, 40);
   
-  --color-primary: black;
+  --color-primary: #1d1f1f;
   --color-dark-primary: #dfebeb;
  }
 
 .prose {
   --tw-prose-headings: var(--color-primary);
+
+  svg {
+    display: inline-block;
+  }
 }
 
 .dark .prose {

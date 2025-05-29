@@ -1,0 +1,117 @@
+---
+import Card from "./Card.astro";
+import ThemeIcon from "./ThemeIcon.astro";
+import NavbarItem from "./NavbarItem.astro";
+import Hamburger from "./Hamburger.astro";
+import HamburgerLink from "./HamburgerLink.astro";
+import Title from "./Title.astro";
+---
+
+<div class="hidden md:flex flex-row justify-center absolute z-20 pt-4 w-full">
+  <div class="flex flex-row justify-center text-lg w-[min(48rem,90vw)]">
+    <Card
+      classList={[
+        "hidden",
+        "md:flex",
+        "items-center",
+        "content-center",
+        "justify-center",
+        "py-1",
+        "w-[min(48rem,90vw)]",
+        "px-2",
+      ]}
+    >
+      <div class="flex w-full"></div>
+      <div class="flex flex-row items-center w-full">
+        <Title textSize="text-xl" underline />
+        <NavbarItem href="/">Home</NavbarItem>
+        <NavbarItem href="/projects">Projects</NavbarItem>
+      </div>
+      <span class="flex justify-end w-full">
+        <ThemeIcon />
+      </span>
+    </Card>
+    <!-- <Card -->
+    <!--   classList={[ -->
+    <!--     "flex", -->
+    <!--     "md:hidden", -->
+    <!--     "w-full", -->
+    <!--     "items-center", -->
+    <!--     "justify-between", -->
+    <!--     "px-2", -->
+    <!--   ]} -->
+    <!-- > -->
+    <!--   <Title /> -->
+    <!--   <span class="flex flex-row items-center"> -->
+    <!--     <ThemeIcon /> -->
+    <!--     <span class="pl-2"> -->
+    <!--       <Hamburger> -->
+    <!--         <HamburgerLink href="/">Home</HamburgerLink> -->
+    <!--         <HamburgerLink href="/projects">Projects</HamburgerLink> -->
+    <!--       </Hamburger> -->
+    <!--     </span> -->
+    <!--   </span> -->
+    <!-- </Card> -->
+  </div>
+</div>
+
+<div class="flex md:hidden flex-row absolute z-20">
+  <Hamburger>
+    <HamburgerLink href="/">Home</HamburgerLink>
+    <HamburgerLink href="/projects">Projects</HamburgerLink>
+  </Hamburger>
+</div>
+
+<!-- this needs to be inline to prevent flashes during initial page load -->
+<script is:inline>
+  const dark = "dark";
+  const light = "light";
+  const themeKey = "theme";
+
+  const prefersDark = () =>
+    window.matchMedia(`(prefers-color-scheme: ${dark})`).matches;
+
+  const prefersLight = () =>
+    window.matchMedia(`(prefers-color-scheme: ${light})`).matches;
+
+  const getTheme = () => {
+    const localStorageTheme = localStorage?.getItem(themeKey) ?? "";
+
+    if ([dark, light].includes(localStorageTheme)) {
+      return localStorageTheme;
+    }
+    if (prefersDark()) {
+      return dark;
+    }
+    return light;
+  };
+
+  const syncPrefs = () => {
+    const theme = getTheme();
+    if (
+      (prefersDark() && theme === dark) ||
+      (prefersLight() && theme === light)
+    ) {
+      localStorage?.removeItem(themeKey);
+    } else {
+      localStorage.setItem(themeKey, getTheme());
+    }
+
+    if (getTheme() === light) {
+      document.documentElement.classList.remove(dark);
+    } else {
+      document.documentElement.classList.add(dark);
+    }
+  };
+
+  syncPrefs();
+  const handleToggleClick = () => {
+    const element = document.documentElement;
+    const darkAdded = element.classList.toggle(dark);
+    localStorage.setItem(themeKey, darkAdded ? dark : light);
+    syncPrefs();
+  };
+  document
+    .querySelectorAll(".themeToggle")
+    .forEach((item) => item.addEventListener("click", handleToggleClick));
+</script>

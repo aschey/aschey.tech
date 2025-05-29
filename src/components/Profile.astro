@@ -5,21 +5,31 @@ import me from "../../assets/me.jpg";
 import GitHub from "../../assets/github.svg";
 import LinkedIn from "../../assets/linkedin.svg";
 import GMail from "../../assets/gmail.svg";
+import Card from "./Card.astro";
 ---
 
+<!-- image alt text color is set to the same color as the background because it looks terrible with the rounded image dimensions -->
 <div
   class="fixed flex flex-col w-full h-full md:h-[80%] z-10 justify-center items-center"
 >
-  <div
-    class="bg-background dark:bg-dark-background flex flex-col md:flex-row items-center md:items-start rounded-md w-[min(48rem,90vw)] p-6 border-border-muted border-4 shadow-card"
+  <Card
+    classList={[
+      "flex",
+      "flex-col",
+      "md:flex-row",
+      "items-center",
+      "md:items-start",
+      "w-[min(48rem,90vw)]",
+      "p-6",
+    ]}
   >
-    <div class="flex flex-col w-full md:w-1/3 items-center">
+    <div class="flex flex-col w-full h-full md:w-1/3 items-center">
       <div class="flex flex-col items-center justify-center h-full gap-2 pb-2">
         <Image
           src={me}
           width={120}
           height={120}
-          class="rounded-[50%]"
+          class="rounded-[50%] bg-border-muted text-border-muted"
           alt="Picture of the author"
         />
 
@@ -64,5 +74,5 @@ import GMail from "../../assets/gmail.svg";
         href="https://en.wikipedia.org/wiki/Generative_art">generative art</a
       >.
     </p>
-  </div>
+  </Card>
 </div>

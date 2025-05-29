@@ -9,7 +9,6 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 const { title, description } = Astro.props;
 ---
 
-<!-- Global Metadata -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <meta name="color-scheme" content="dark light" />
@@ -17,7 +16,6 @@ const { title, description } = Astro.props;
 <link rel="sitemap" href="/sitemap-index.xml" />
 <meta name="generator" content={Astro.generator} />
 
-<!-- Font preloads -->
 <link
   rel="preload"
   href="/fonts/NunitoSans.ttf"
@@ -26,10 +24,16 @@ const { title, description } = Astro.props;
   crossorigin
 />
 
-<!-- Canonical URL -->
+<link
+  rel="preload"
+  href="/fonts/MartianMono.ttf"
+  as="font"
+  type="font/ttf"
+  crossorigin
+/>
+
 <link rel="canonical" href={canonicalURL} />
 
-<!-- Primary Meta Tags -->
 <title>{title}</title>
 <meta name="title" content={title} />
 <meta name="description" content={description} />

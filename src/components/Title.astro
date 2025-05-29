@@ -1,0 +1,23 @@
+---
+interface Props {
+  textSize: "text-base" | "text-l" | "text-xl";
+  underline: boolean;
+}
+
+const { textSize, underline } = Astro.props;
+---
+
+<div
+  class:list={[
+    "flex",
+    "pr-4",
+    "font-mono",
+    "font-bold",
+    textSize,
+    underline && "underline",
+    "decoration-blue-900",
+    "dark:decoration-cyan-400",
+  ]}
+>
+  <a href="/">aschey.tech</a>
+</div>
