@@ -6,9 +6,15 @@ import { canvasId } from "../scripts/contourConsts";
   import { canvasId } from "../scripts/contourConsts";
 
   addEventListener("beforeunload", () => {
-    // For some reason, the WebGL renderer flashes white on Chrome while reloading the page occasionally.
+    // This is a terrible hack, but for some reason,
+    // the WebGL renderer flashes white on Chrome while unloading the page occasionally.
     // Hiding the canvas before the page reloads is a workaround.
-    document.getElementById(canvasId)!.style.display = "none";
+    let canvasElement = document.getElementById(canvasId)!;
+    canvasElement.style.display = "none";
+    setTimeout(() => {
+      // The window may not actually reload, in which case we need to re-show it.
+      canvasElement.style.display = "block";
+    }, 50);
   });
 </script>
 
