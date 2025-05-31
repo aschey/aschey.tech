@@ -30,7 +30,11 @@ import Title from "./Title.astro";
 </script>
 
 <div class="flex flex-col p-1" id="hamburger">
-  <button id="navOpen" class="w-full h-full cursor-pointer">
+  <button
+    id="navOpen"
+    aria-label="Open navigation menu"
+    class="w-full h-full cursor-pointer"
+  >
     <Bars class="pointer-events-none" width="2em" height="2em" />
   </button>
   <div
@@ -44,7 +48,11 @@ import Title from "./Title.astro";
         <Title textSize="text-base" underline={false} />
         <ThemeIcon />
       </header>
-      <button id="navClose" class="w-full h-full cursor-pointer">
+      <button
+        id="navClose"
+        aria-label="Close navigation menu"
+        class="w-full h-full cursor-pointer"
+      >
         <Close class="pointer-events-none p-1" width="1.5em" height="1.5em" />
       </button>
     </div>
