@@ -28,19 +28,30 @@ import Computer from "../../assets/computer.svg";
 
 ### [stream-download](https://github.com/aschey/stream-download-rs)
 
-A library for streaming audio, video, and other content.
+A library for streaming audio, video, and other content. The overall goal is to
+allow any asynchronous byte source to be used as a synchronous
+[Read](https://doc.rust-lang.org/std/io/trait.Read.html) and
+[Seek](https://doc.rust-lang.org/std/io/trait.Seek.html) interface.
 
 ### [icy-metadata](https://github.com/aschey/icy-metadata)
 
-[Icecast](https://icecast.org) metadata parser.
+An [Icecast](https://icecast.org) metadata parser.
+Icecast embeds its metadata directly within an audio stream,
+requiring some form of middleware to parse and remove it before the audio data
+can be decoded.
 
 ### [terminput](https://github.com/aschey/terminput)
 
-TUI input parser/encoder and abstraction over different backends.
+An ANSI escape code parser/encoder for terminal inputs and
+abstraction over various backends that provide input events, such as key presses and mouse clicks.
 
 ### [tipsy](https://github.com/aschey/tipsy)
 
 Cross-platform IPC for [Tokio](https://tokio.rs).
+Uses [unix domain sockets](https://en.wikipedia.org/wiki/Unix_domain_socket) on Unix and
+[named pipes](https://learn.microsoft.com/en-us/windows/win32/ipc/named-pipes) on Windows.
+Many applications support Unix sockets, but a higher level of abstraction is required to make
+this type of IPC paradigm work cross-platform.
 
 <header class="border-b border-gray-500">
 
@@ -51,6 +62,7 @@ Cross-platform IPC for [Tokio](https://tokio.rs).
 ### [vercel-tokei](https://github.com/aschey/vercel-tokei)
 
 [Tokei](https://github.com/XAMPPRocky/tokei) badge service running as a Vercel serverless function.
+An easy way to add a badge to show lines of code for your git repository.
 
 ### [aschey.tech](https://github.com/aschey/aschey.tech)
 
