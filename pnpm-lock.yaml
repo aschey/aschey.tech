@@ -26,6 +26,9 @@ importers:
       astro:
         specifier: ^5.8.0
         version: 5.8.0(@types/node@22.15.17)(jiti@2.4.2)(lightningcss@1.30.1)(rollup@4.40.2)(typescript@5.7.3)(yaml@2.7.1)
+      colorjs.io:
+        specifier: ^0.5.2
+        version: 0.5.2
       pixi.js:
         specifier: ^8.9.2
         version: 8.9.2
@@ -1120,6 +1123,9 @@ packages:
   color@4.2.3:
     resolution: {integrity: sha512-1rXeuUUiGGrykh+CeBdu5Ie7OJwinCgQY0bc7GCRxy5xVHy+moaqkpL/jqQq0MtQOeYcrqEz4abc5f0KtU7W4A==}
     engines: {node: '>=12.5.0'}
+
+  colorjs.io@0.5.2:
+    resolution: {integrity: sha512-twmVoizEW7ylZSN32OgKdXRmo1qg+wT5/6C3xu5b9QsWzSFAhHLn2xd8ro0diCsKfCj1RdaTP/nrcW+vAoQPIw==}
 
   comma-separated-tokens@2.0.3:
     resolution: {integrity: sha512-Fu4hJdvzeylCfQPp9SGWidpzrMs7tTrlu6Vb8XGaRGck8QSNZJJp538Wrb60Lax4fPwR64ViY468OIUTbRlGZg==}
@@ -3622,6 +3628,8 @@ snapshots:
     dependencies:
       color-convert: 2.0.1
       color-string: 1.9.1
+
+  colorjs.io@0.5.2: {}
 
   comma-separated-tokens@2.0.3: {}
 

@@ -1,8 +1,6 @@
 ---
 import Bars from "../../assets/bars.svg";
 import Close from "../../assets/close.svg";
-import ThemeIcon from "./ThemeIcon.astro";
-import Title from "./Title.astro";
 ---
 
 <script>
@@ -29,7 +27,7 @@ import Title from "./Title.astro";
   document.addEventListener("click", (e) => hideMenu(e, false));
 </script>
 
-<div class="flex flex-col p-1" id="hamburger">
+<div class="flex flex-col px-1" id="hamburger">
   <button
     id="navOpen"
     aria-label="Open navigation menu"
@@ -39,15 +37,29 @@ import Title from "./Title.astro";
   </button>
   <div
     id="navLinks"
-    class="text-xl z-30 absolute left-0 top-0 bg-background dark:bg-dark-background border border-gray-500 motion-safe:transition-transform -translate-x-full"
+    class:list={[
+      "text-xl",
+      "z-30",
+      "absolute",
+      "left-0",
+      "top-0",
+      "bg-background",
+      "dark:bg-dark-background",
+      "border-b-2",
+      "border-r-2",
+      "border-border-muted",
+      "dark:border-dark-border-muted",
+      "rounded-tr-md",
+      "rounded-br-md",
+      "motion-safe:transition-transform",
+      "-translate-x-full",
+    ]}
   >
     <div class="flex flex-row">
-      <header
-        class="flex flex-row items-center border-b pb-1 mx-4 pt-4 border-b-blue-900 dark:border-b-cyan-400"
-      >
-        <Title textSize="text-base" underline={false} />
-        <ThemeIcon />
-      </header>
+      <div class="p-2">
+        <slot />
+      </div>
+
       <button
         id="navClose"
         aria-label="Close navigation menu"
@@ -55,9 +67,6 @@ import Title from "./Title.astro";
       >
         <Close class="pointer-events-none p-1" width="1.5em" height="1.5em" />
       </button>
-    </div>
-    <div class="p-4">
-      <slot />
     </div>
   </div>
 </div>

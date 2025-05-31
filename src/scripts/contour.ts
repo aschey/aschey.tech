@@ -1,4 +1,5 @@
 import { BoxGeometry, ShaderMaterial, Vector2, Vector3, Mesh, Scene, WebGLRenderer, OrthographicCamera } from "three";
+import Color from "colorjs.io";
 import contourFrag from "./contour.frag?raw"
 import contourVert from "./contour.vert?raw"
 import { canvasId } from "./contourConsts"
@@ -20,13 +21,8 @@ const getColorVector = (isDark: boolean) => {
     let styles = getComputedStyle(document.documentElement);
     let styleName = isDark ? "--color-dark-background" : "--color-background";
     let style = styles.getPropertyValue(styleName);
-    if (style.startsWith('#')) {
-        // tailwind converts rgb values to hex in release mode
-        style = hexToRgb(style);
-    }
-    const re = /rgb\((\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)/;
-    const groups = style.match(re)!;
-    return new Vector3(parseInt(groups[1]), parseInt(groups[2]), parseInt(groups[3]))
+    let color = new Color(style).to('srgb');
+    return new Vector3(color.r * 255, color.g * 255, color.b * 255);
 }
 
 

@@ -5,6 +5,11 @@ import NavbarItem from "./NavbarItem.astro";
 import Hamburger from "./Hamburger.astro";
 import HamburgerLink from "./HamburgerLink.astro";
 import Title from "./Title.astro";
+
+const links = [
+  { title: "Home", href: "/" },
+  { title: "Projects", href: "/projects" },
+];
 ---
 
 <div class="hidden md:flex flex-row justify-center absolute z-20 pt-4 w-full">
@@ -24,8 +29,9 @@ import Title from "./Title.astro";
       <div class="flex w-full"></div>
       <div class="flex flex-row items-center w-full">
         <Title textSize="text-xl" underline />
-        <NavbarItem href="/">Home</NavbarItem>
-        <NavbarItem href="/projects">Projects</NavbarItem>
+        <div class="flex flex-row px-4">
+          {links.map((l) => <NavbarItem href={l.href}>{l.title}</NavbarItem>)}
+        </div>
       </div>
       <span class="flex justify-end w-full">
         <ThemeIcon />
@@ -34,11 +40,30 @@ import Title from "./Title.astro";
   </div>
 </div>
 
-<div class="flex md:hidden flex-row absolute z-20">
+<div
+  class:list={[
+    "flex",
+    "md:hidden",
+    "flex-row",
+    "w-full",
+    "p-1",
+    "fixed",
+    "z-20",
+    "bg-background",
+    "dark:bg-dark-background",
+    "border-b",
+    "border-border-muted",
+  ]}
+>
   <Hamburger>
-    <HamburgerLink href="/">Home</HamburgerLink>
-    <HamburgerLink href="/projects">Projects</HamburgerLink>
+    {links.map((l) => <HamburgerLink href={l.href}>{l.title}</HamburgerLink>)}
   </Hamburger>
+  <div class="w-full justify-center items-center content-center">
+    <Title textSize="text-xl" underline />
+  </div>
+  <div class="pr-1">
+    <ThemeIcon />
+  </div>
 </div>
 
 {/* this needs to be inline to prevent flashes during initial page load */}

@@ -24,18 +24,19 @@
   --font-mono: 'MartianMono', 'monospace';
   --shadow-card: 4.0px 8.0px 8.0px hsl(0deg 0% 0% / 0.38);
   
-  --color-background: rgb(200, 200, 200);
-  --color-dark-background: rgb(17, 17, 17);
+  --color-background: var(--color-gray-300);
+  --color-dark-background: var(--color-gray-950);
   
-  --color-border-muted: rgb(40, 40, 40);
-  --color-dark-border-muted: rgb(40, 40, 40);
+  --color-border-muted: var(--color-zinc-700);
+  --color-dark-border-muted: var(--color-zinc-800);
   
-  --color-primary: #1d1f1f;
-  --color-dark-primary: #dfebeb;
+  --color-primary: var(--color-gray-950);
+  --color-dark-primary: var(--color-gray-300);
  }
 
 .prose {
   --tw-prose-headings: var(--color-primary);
+  --tw-prose-body: var(--color-primary);
 
   svg {
     display: inline-block;
@@ -43,6 +44,7 @@
 }
 
 .dark .prose {
- --tw-prose-headings: var(--color-dark-primary); 
+  --tw-prose-headings: var(--color-dark-primary);
+  --tw-prose-body: var(--color-dark-primary);
 }
 
