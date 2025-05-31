@@ -1,47 +1,54 @@
 ---
 import Bars from "../../assets/bars.svg";
+import Close from "../../assets/close.svg";
 import ThemeIcon from "./ThemeIcon.astro";
 import Title from "./Title.astro";
 ---
 
 <script>
-  const toggleMenu = () => {
+  const openMenu = () => {
     let links = document.getElementById("navLinks")!;
-    if (links.classList.contains("-translate-x-full")) {
-      links.classList.remove("-translate-x-full");
-    } else {
-      links.classList.add("-translate-x-full");
-    }
+    links.classList.remove("-translate-x-full");
   };
 
-  const hideMenu = (event: any) => {
+  const hideMenu = (event: MouseEvent, force: boolean) => {
     const hamburger = document.getElementById("hamburger")!;
-    if (!hamburger.contains(event.target)) {
+    if (
+      force ||
+      !(event.target instanceof Node) ||
+      !hamburger.contains(event.target)
+    ) {
       let links = document.getElementById("navLinks")!;
       links.classList.add("-translate-x-full");
     }
   };
+  document.getElementById("navOpen")!.addEventListener("click", openMenu);
   document
-    .getElementById("toggleButton")
-    ?.addEventListener("click", toggleMenu);
-  document.addEventListener("click", hideMenu);
+    .getElementById("navClose")!
+    .addEventListener("click", (e) => hideMenu(e, true));
+  document.addEventListener("click", (e) => hideMenu(e, false));
 </script>
 
 <div class="flex flex-col p-1" id="hamburger">
-  <button id="toggleButton" class="w-full h-full cursor-pointer">
-    <Bars class="pointer-events-none" width="40px" height="40px" />
+  <button id="navOpen" class="w-full h-full cursor-pointer">
+    <Bars class="pointer-events-none" width="2em" height="2em" />
   </button>
   <div
     id="navLinks"
-    class="text-xl z-30 absolute left-0 top-0 bg-background dark:bg-dark-background border border-gray-500 p-4 motion-safe:transition-transform -translate-x-full"
+    class="text-xl z-30 absolute left-0 top-0 bg-background dark:bg-dark-background border border-gray-500 motion-safe:transition-transform -translate-x-full"
   >
-    <header
-      class="flex flex-row items-center border-b pb-1 border-b-blue-900 dark:border-b-cyan-400"
-    >
-      <Title textSize="text-base" underline={false} />
-      <ThemeIcon />
-    </header>
-    <div class="pt-3">
+    <div class="flex flex-row">
+      <header
+        class="flex flex-row items-center border-b pb-1 px-4 pt-4 border-b-blue-900 dark:border-b-cyan-400"
+      >
+        <Title textSize="text-base" underline={false} />
+        <ThemeIcon />
+      </header>
+      <button id="navClose" class="w-full h-full cursor-pointer">
+        <Close class="pointer-events-none p-1" width="1.5em" height="1.5em" />
+      </button>
+    </div>
+    <div class="p-4">
       <slot />
     </div>
   </div>

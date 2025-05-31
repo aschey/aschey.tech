@@ -6,10 +6,8 @@ import Computer from "../../assets/computer.svg";
     .prose svg {
       color: var(--color-blue-900);
     }
-    .dark .prose {
-      svg {
-        color: var(--color-cyan-400);
-      }
+    .dark .prose svg {
+      color: var(--color-cyan-400);
     }
   `}
 </style>
@@ -29,7 +27,8 @@ import Computer from "../../assets/computer.svg";
 ### [stream-download](https://github.com/aschey/stream-download-rs)
 
 A library for streaming audio, video, and other content. The overall goal is to
-allow any asynchronous byte source to be used as a synchronous
+handle the intricacies involved with asynchronous streams and
+allow any byte source to be used as a synchronous
 [Read](https://doc.rust-lang.org/std/io/trait.Read.html) and
 [Seek](https://doc.rust-lang.org/std/io/trait.Seek.html) interface.
 
@@ -37,7 +36,7 @@ allow any asynchronous byte source to be used as a synchronous
 
 An [Icecast](https://icecast.org) metadata parser.
 Icecast embeds its metadata directly within an audio stream,
-requiring some form of middleware to parse and remove it before the audio data
+requiring some form of middleware to parse and remove it before the media data
 can be decoded.
 
 ### [terminput](https://github.com/aschey/terminput)

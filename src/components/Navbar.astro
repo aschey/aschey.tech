@@ -31,27 +31,6 @@ import Title from "./Title.astro";
         <ThemeIcon />
       </span>
     </Card>
-    <!-- <Card -->
-    <!--   classList={[ -->
-    <!--     "flex", -->
-    <!--     "md:hidden", -->
-    <!--     "w-full", -->
-    <!--     "items-center", -->
-    <!--     "justify-between", -->
-    <!--     "px-2", -->
-    <!--   ]} -->
-    <!-- > -->
-    <!--   <Title /> -->
-    <!--   <span class="flex flex-row items-center"> -->
-    <!--     <ThemeIcon /> -->
-    <!--     <span class="pl-2"> -->
-    <!--       <Hamburger> -->
-    <!--         <HamburgerLink href="/">Home</HamburgerLink> -->
-    <!--         <HamburgerLink href="/projects">Projects</HamburgerLink> -->
-    <!--       </Hamburger> -->
-    <!--     </span> -->
-    <!--   </span> -->
-    <!-- </Card> -->
   </div>
 </div>
 
@@ -62,7 +41,7 @@ import Title from "./Title.astro";
   </Hamburger>
 </div>
 
-<!-- this needs to be inline to prevent flashes during initial page load -->
+{/* this needs to be inline to prevent flashes during initial page load */}
 <script is:inline>
   const dark = "dark";
   const light = "light";
