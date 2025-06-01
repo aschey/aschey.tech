@@ -7,16 +7,6 @@ import { canvasId } from "./contourConsts"
 const darkModeEnabled = () => document.documentElement.classList.contains("dark");
 const isDarkInit = darkModeEnabled();
 
-const hexToRgb = (hex: string) => {
-    // Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
-    let shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
-    hex = hex.replace(shorthandRegex, function (_m, r: string, g: string, b: string) {
-        return r + r + g + g + b + b;
-    });
-    let result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex) || "";
-    return `rgb(${parseInt(result[1], 16)},${parseInt(result[2], 16)},${parseInt(result[3], 16)})`;
-}
-
 const getColorVector = (isDark: boolean) => {
     let styles = getComputedStyle(document.documentElement);
     let styleName = isDark ? "--color-dark-background" : "--color-background";
@@ -24,7 +14,6 @@ const getColorVector = (isDark: boolean) => {
     let color = new Color(style).to('srgb');
     return new Vector3(color.r * 255, color.g * 255, color.b * 255);
 }
-
 
 const geometry = new BoxGeometry(100, 100);
 const material = new ShaderMaterial({
