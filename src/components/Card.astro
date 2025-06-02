@@ -3,10 +3,12 @@ interface Props {
   classList: string[];
 }
 const { classList } = Astro.props;
+
+import { twMerge } from "tailwind-merge";
 ---
 
 <div
-  class:list={[
+  class={twMerge([
     "bg-background",
     "dark:bg-dark-background",
     "border-border-muted",
@@ -15,7 +17,7 @@ const { classList } = Astro.props;
     "shadow-card",
     "rounded-md",
     ...classList,
-  ]}
+  ])}
 >
   <slot />
 </div>

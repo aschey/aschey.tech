@@ -27,7 +27,7 @@
   --color-background: var(--color-gray-300);
   --color-dark-background: var(--color-gray-950);
   
-  --color-border-muted: var(--color-gray-400);
+  --color-border-muted: oklch(0.7819 0.0093 258.34);
   --color-dark-border-muted: var(--color-gray-900);
   
   --color-primary: var(--color-gray-950);

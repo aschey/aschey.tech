@@ -1,0 +1,77 @@
+---
+import jupiter from "../assets/jupiter.png";
+import collatz from "../assets/collatz.png";
+import collatz2 from "../assets/collatz2.png";
+import digital from "../assets/digital.png";
+import trees from "../assets/trees.png";
+import Base from "../components/Base.astro";
+import Lightbox from "../components/Lightbox";
+import Card from "../components/Card.astro";
+import { Image } from "astro:assets";
+
+const images = [
+  { img: digital, alt: "digital" },
+  { img: collatz, alt: "collatz" },
+  { img: trees, alt: "trees" },
+  { img: jupiter, alt: "jupiter" },
+  { img: collatz2, alt: "collatz2" },
+];
+---
+
+<script>
+  import { galleryIndex } from "../scripts/gallery.ts";
+  const setIndex = (index: number) => {
+    console.log(index);
+    galleryIndex.set(index);
+  };
+  for (const [i, value] of Array.from(
+    document.getElementsByClassName("gallery-img"),
+  ).entries()) {
+    value.addEventListener("click", () => setIndex(i));
+  }
+</script>
+
+<Base>
+  <div class="py-24 px-8 flex gap-6 justify-center">
+    <div class="flex flex-col gap-6 w-[55vw]">
+      <Card classList={["border-12", "w-[50vw]"]}>
+        <Image
+          class="gallery-img cursor-pointer"
+          src={images[0].img}
+          alt={images[0].alt}
+        />
+      </Card>
+      <Card classList={["border-12", "w-[52vw]"]}>
+        <Image
+          class="gallery-img cursor-pointer"
+          src={images[1].img}
+          alt={images[1].alt}
+        />
+      </Card>
+      <Card classList={["border-12"]}>
+        <Image
+          class="gallery-img cursor-pointer"
+          src={images[2].img}
+          alt={images[2].alt}
+        />
+      </Card>
+    </div>
+    <div class="flex flex-col gap-6 w-[25vw] items-end">
+      <Card classList={["border-12"]}>
+        <Image
+          class="gallery-img cursor-pointer"
+          src={images[3].img}
+          alt={images[3].alt}
+        />
+      </Card>
+      <Card classList={["border-12", "w-[20vw]"]}>
+        <Image
+          class="gallery-img cursor-pointer"
+          src={images[4].img}
+          alt={images[4].alt}
+        />
+      </Card>
+    </div>
+  </div>
+  <Lightbox images={images.map((i) => i.img)} client:only="preact" />
+</Base>

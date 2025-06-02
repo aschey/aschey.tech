@@ -1,7 +1,7 @@
 import { BoxGeometry, ShaderMaterial, Vector2, Vector3, Mesh, Scene, WebGLRenderer, OrthographicCamera } from "three";
 import Color from "colorjs.io";
-import contourFrag from "./contour.frag?raw"
-import contourVert from "./contour.vert?raw"
+import contourFrag from "../shaders/contour.frag?raw"
+import contourVert from "../shaders/contour.vert?raw"
 import { canvasId } from "./contourConsts"
 
 const darkModeEnabled = () => document.documentElement.classList.contains("dark");

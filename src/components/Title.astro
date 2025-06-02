@@ -1,25 +1,29 @@
 ---
+import { twMerge } from "tailwind-merge";
+
 interface Props {
-  textSize: "text-base" | "text-l" | "text-xl";
-  underline: boolean;
+  classList?: string[];
 }
 
-const { textSize, underline } = Astro.props;
+const { classList } = Astro.props;
 ---
 
 <div
-  class:list={[
+  class:list={twMerge([
     "flex",
     "items-center",
     "content-center",
     "justify-center",
     "font-mono",
     "font-bold",
-    textSize,
-    underline && "underline",
     "decoration-blue-900",
+    "hover:decoration-blue-500",
     "dark:decoration-cyan-400",
-  ]}
+    "dark:hover:decoration-cyan-600",
+    "text-xl",
+    "underline",
+    ...(classList || []),
+  ])}
 >
   <a href="/">aschey.tech</a>
 </div>

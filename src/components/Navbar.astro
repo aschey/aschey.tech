@@ -9,6 +9,7 @@ import Title from "./Title.astro";
 const links = [
   { title: "Home", href: "/" },
   { title: "Projects", href: "/projects" },
+  { title: "Gallery", href: "/gallery" },
 ];
 ---
 
@@ -28,7 +29,7 @@ const links = [
     >
       <div class="flex w-full"></div>
       <div class="flex flex-row items-center w-full">
-        <Title textSize="text-xl" underline />
+        <Title />
         <div class="flex flex-row px-4">
           {links.map((l) => <NavbarItem href={l.href}>{l.title}</NavbarItem>)}
         </div>
@@ -60,7 +61,7 @@ const links = [
     {links.map((l) => <HamburgerLink href={l.href}>{l.title}</HamburgerLink>)}
   </Hamburger>
   <div class="w-full justify-center items-center content-center">
-    <Title textSize="text-xl" underline />
+    <Title />
   </div>
   <div class="pr-1">
     <ThemeIcon />

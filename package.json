@@ -11,16 +11,22 @@
   },
   "dependencies": {
     "@astrojs/mdx": "^4.3.0",
+    "@astrojs/preact": "^4.1.0",
     "@astrojs/sitemap": "^3.4.0",
     "@astrojs/ts-plugin": "^1.10.4",
+    "@astrojs/vercel": "^8.1.4",
+    "@nanostores/preact": "^1.0.0",
     "@tailwindcss/typography": "^0.5.16",
     "@tailwindcss/vite": "^4.1.7",
     "astro": "^5.8.0",
     "colorjs.io": "^0.5.2",
-    "pixi.js": "^8.9.2",
+    "nanostores": "^1.0.1",
+    "preact": "^10.26.8",
     "sharp": "^0.34.2",
+    "tailwind-merge": "^3.3.0",
     "tailwindcss": "^4.1.7",
-    "three": "^0.176.0"
+    "three": "^0.176.0",
+    "yet-another-react-lightbox": "^3.23.2"
   },
   "packageManager": "pnpm@10.11.0+sha512.6540583f41cc5f628eb3d9773ecee802f4f9ef9923cc45b69890fb47991d4b092964694ec3a4f738a420c918a333062c8b925d312f42e4f0c263eb603551f977",
   "devDependencies": {
