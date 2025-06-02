@@ -16,6 +16,7 @@ const { ENABLE_IMAGE_SERVICE } = loadEnv(
 // https://astro.build/config
 export default defineConfig({
   site: "https://aschey.tech",
+  output: "static",
   integrations: [sitemap(), mdx(), preact({ compat: true, devtools: true })],
   vite: {
     plugins: [tailwindcss()],
