@@ -25,10 +25,10 @@
   --shadow-card: 4.0px 8.0px 8.0px hsl(0deg 0% 0% / 0.38);
   
   --color-background: var(--color-gray-300);
-  --color-dark-background: var(--color-gray-950);
+  --color-dark-background: var(--color-zinc-950);
   
   --color-border-muted: oklch(0.7819 0.0093 258.34);
-  --color-dark-border-muted: var(--color-gray-900);
+  --color-dark-border-muted: var(--color-zinc-900);
   
   --color-primary: var(--color-gray-950);
   --color-dark-primary: var(--color-gray-300);
@@ -48,3 +48,10 @@
   --tw-prose-body: var(--color-dark-primary);
 }
 
+:root {
+  --yarl__slide_captions_container_background: rgba(0,0,0,0.75);
+}
+
+.yarl__slide_description_container .yarl__slide_description {
+  hyphens: none;
+}

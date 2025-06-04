@@ -1,0 +1,30 @@
+---
+import { twMerge } from "tailwind-merge";
+import Card from "./Card.astro";
+import { Image } from "astro:assets";
+
+interface Props {
+  img: ImageMetadata & { title: string };
+  alt: string;
+  classList?: string[];
+}
+
+const { img, alt, classList } = Astro.props;
+---
+
+<Card
+  classList={[
+    "gallery-img",
+    "cursor-pointer",
+    "bg-border-muted",
+    "dark:bg-dark-border-muted",
+    "text-l",
+    "md:text-xl",
+    "border-x-8",
+    "border-t-8",
+    ...(classList || []),
+  ]}
+>
+  <Image src={img} alt={alt} />
+  <div class="py-1 pl-1">{img.title}</div>
+</Card>
