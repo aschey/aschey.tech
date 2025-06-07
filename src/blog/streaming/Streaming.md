@@ -1,0 +1,725 @@
+---
+slug: media-streaming
+title: Media Streaming
+tags: [media]
+---
+
+## Intro
+
+If you've used YouTube, Spotify, Netflix, or any similar apps before, you're
+probably familiar with the concept of media streaming. Embedding media content
+that can be loaded directly from some remote source is a common feature for apps
+that support audio or video data. There are a number of libraries that can
+handle this - `ffmpeg`, `gstreamer`, and `mpv`, to name a few. These are heavy
+dependencies, however, and you may want to use something more lightweight.
+
+It can be fairly easy to create something that works under optimal conditions,
+but an efficient solution that handles edge cases correctly can be deceptively
+complicated due to the number of concurrency-related challenges you may
+encounter. I created [a library](https://github.com/aschey/stream-download-rs)
+to solve this specific problem and I'll talk a bit about how it works in this
+post.
+
+We'll talk specifically about audio streaming here, but most of these concepts
+apply to other types of media as well.
+
+## Anatomy of an audio program
+
+A typical audio program will consist of several components:
+
+- **Audio source** - source for encoded audio data (usually a file or a URL)
+- **Decoder thread** - reads encoded audio data from the source, decodes it into
+  raw [PCM data](https://en.wikipedia.org/wiki/Pulse-code_modulation), and
+  writes it into a ring buffer.
+- **Ring buffer** - a
+  [data structure](https://en.wikipedia.org/wiki/Circular_buffer) used for
+  sending slices of binary data between threads.
+- **Audio thread** - receives PCM data from the ring buffer and invokes the
+  operating system's API for controlling the audio sink. This needs to happen
+  very quickly to avoid creating discontinuities in the output stream so it's
+  best to avoid any expensive operations such as memory allocation or blocking
+  I/O.
+- **Audio sink** - sends raw audio data to the audio output device.
+
+Putting it all together, the flow looks something like this:
+
+![audio program diagram](../../assets/audio.svg)
+
+> [!NOTE]
+> A detailed description of how an audio decoder works is outside the scope of
+> this post. The example here is meant to convey the high-level concepts.
+
+Let's look at an example of a simple audio program that decodes a list of files
+from some user input and plays them in order. We'll use a queue to send file
+objects from the main thread to the decoder and a simple ring buffer to send
+decoded PCM data from the decoder to the audio output device.
+
+> [!NOTE]
+> The examples here use Rust syntax, but you don't need to know the intricacies
+> of Rust to follow along.
+>
+> The code used throughout this article is simplified to avoid being overly
+> burdened by implementation details. It is not intended to be executed
+> verbatim.
+
+```rust
+fn main() {
+    let (queue_producer, queue_consumer) = Queue::new();
+    let (ring_buffer_producer, ring_buffer_consumer) = RingBuffer::new();
+
+    // Spawn the decoder thread.
+    thread::spawn(move || decode_input(queue_consumer, ring_buffer_producer));
+    // Spawn the audio thread.
+    thread::spawn(move || process_audio_output(ring_buffer_consumer));
+
+    // Enqueue any new files we receive from user input.
+    while let Some(path) = next_input() {
+        let file = File::open(path);
+        // Add the file to the queue.
+        queue_producer.enqueue(file);
+    }
+}
+
+fn decode_input(
+    queue_consumer: QueueConsumer<File>,
+    ring_buffer_producer: RingBufferProducer<f32>,
+) {
+    // Keep processing inputs until the queue is closed.
+    while let Some(file) = queue_consumer.dequeue() {
+        let decoder = Decoder::new(file);
+        // We need to iterate through the file and decode one chunk at a time,
+        // so we can fill the output stream as quickly as possible.
+        while !decoder.is_finished() {
+            // Decode the next chunk of data from the file.
+            decoder.decode_next_chunk();
+            // Read the decoded samples from the decoder and
+            // write them into the ring buffer.
+            // This will block until there's space available in the ring buffer.
+            ring_buffer_producer.write(decoder.decoded_samples());
+        }
+    }
+}
+
+fn process_audio_output(ring_buffer_consumer: RingBufferConsumer<f32>) {
+    let audio_device = AudioOutputDevice::new();
+    audio_device.start_output_stream();
+    loop {
+        // Poll the audio device and wait for the next buffer to become available.
+        let mut buffer = audio_device.poll_next_buffer();
+        // Read as many samples as possible from the ring buffer
+        // and write them into the audio output.
+        ring_buffer_consumer.read(buffer);
+    }
+}
+```
+
+This architecture works fine if you already have the complete contents available
+in some structure that can be read synchronously (usually a file), but this is
+not the case when streaming from a remote server.
+
+Let's talk about some solutions for handling this, in order of increasing
+complexity.
+
+## Solution #1: Download It First
+
+Instead of receiving file paths as user input, let's change the code to receive
+URLs instead. We'll use an HTTP client to fetch the media content, save it to a
+temporary file, and pass the file object to the decoder.
+
+```rust
+fn main() {
+    let (queue_producer, queue_consumer) = Queue::new();
+    let (ring_buffer_producer, ring_buffer_consumer) = RingBuffer::new();
+
+    // Spawn the decoder thread.
+    thread::spawn(move || decode_input(queue_consumer, ring_buffer_producer));
+    // Spawn the audio thread.
+    thread::spawn(move || process_audio_output(consumer));
+
+    let client = HttpClient::new();
+    // Enqueue any new URLs we receive from user input.
+    while let Some(url) = next_input() {
+        // Download the whole file.
+        let bytes = client.get(url).bytes();
+        // Write the content to a temporary file.
+        let temp_file = TempFile::new();
+        temp_file.write_all(bytes);
+        // Add the file to the queue.
+        queue_producer.enqueue(temp_file);
+    }
+}
+```
+
+This is a simple solution that may be adequate under the following conditions:
+
+- Your files are small
+- Your client has a fast, reliable internet connection
+- The server has good upload speeds
+
+However, this solution is problematic unless all of these points hold. It's not
+very efficient to wait for the entire file to download before decoding any of
+the contents. What if you need to download a
+[30-minute audio file](https://www.youtube.com/watch?v=NyUMHEua7-A) and your
+connection speed suddenly slows down? You could be waiting several minutes for
+the source to start playing.
+
+## Solution #2: Just-in-time Streaming
+
+So far, we've exclusively used file objects as input for our audio decoder, but
+this isn't strictly necessary. A robust decoder library should be able to
+operate on a generic interface for reading bytes rather than a concrete
+implementation.
+
+In Rust, we use traits in
+[`std::io`](https://doc.rust-lang.org/std/io/index.html) to abstract over
+sources that can read and write bytes. Other languages typically have similar
+interfaces (for example, [`io`](https://pkg.go.dev/io) for Go or
+[`java.io`](https://docs.oracle.com/javase/8/docs/api/java/io/package-summary.html)
+for Java). We can create our own implementation that uses the `std::io::Read`
+and `std::io::Seek` traits to read data from the server on demand.
+
+> [!NOTE]
+> Rust's concept of a trait is very similar to an interface in other languages.
+
+Our custom I/O source can utilize
+[HTTP range requests](https://developer.mozilla.org/en-US/docs/Web/HTTP/Range_requests)
+to avoid requesting the entire file contents each time. Using the `Range`
+header, we can ask for a specific range of bytes, which can yield significant
+performance improvements for larger content.
+
+Implementing the `std::io::Read` interface allows us to fill a buffer with our
+input data whenever the caller requests it.
+
+```rust
+struct StreamReader {
+    client: HttpClient,
+    content_length: u64,
+    url: Url,
+    position: u64,
+}
+
+impl StreamReader {
+    fn new(url: Url) -> Self {
+        let client = HttpClient::new();
+        // The Content-Length response header tells us the size of the stream in bytes
+        let content_length: u64 = client.head(url).header("Content-Length").parse();
+        Self {
+            client,
+            content_length,
+            url,
+            position: 0,
+        }
+    }
+}
+
+impl std::io::Read for StreamReader {
+    fn read(&mut self, buffer: &mut [u8]) -> std::io::Result<usize> {
+        let start = self.position;
+        // Byte ranges are inclusive, so we have to subtract 1 from the length
+        // to get the end value.
+        let end = (start + buffer.len()).min(self.content_length) - 1;
+
+        // Send a request for the next chunk of data only
+        let bytes = self
+            .client
+            .header("Range", format!("bytes={start}-{end}"))
+            .get(self.url)
+            .bytes();
+
+        let bytes_len = bytes.len();
+        // Fill the buffer with the response data.
+        buffer[..bytes_len].copy_from_slice(&bytes);
+        // Update our stream position.
+        self.position += bytes_len;
+        return Ok(bytes_len);
+    }
+}
+```
+
+Decoders also need to be able to perform `seek` operations to move to different
+locations within the file. Decoders can issue seek requests for a variety of
+reasons, such as detecting the codec used to encode the content or responding to
+a fast forward or rewind command.
+
+All we need to do here is update our current position. The next call to `read`
+will request data from the new position.
+
+```rust
+impl std::io::Seek for StreamReader {
+    fn seek(&mut self, position: SeekFrom) -> std::io::Result<u64> {
+        match position {
+            SeekFrom::Start(from_start) => {
+                self.position = from_start;
+            }
+            SeekFrom::Current(from_current) => {
+                self.position = self.position + from_current;
+            }
+            SeekFrom::End(from_end) => {
+                self.position = self.content_length + from_end;
+            }
+        }
+        // Return the new stream position
+        return Ok(self.position);
+    }
+}
+```
+
+To use our new `HttpSource`, we need to change our main loop to instantiate a
+new source for each URL we receive, but almost everything else remains
+unchanged.
+
+```rust
+fn main() {
+    let (queue_producer, queue_consumer) = Queue::new();
+    let (ring_buffer_producer, ring_buffer_consumer) = RingBuffer::new();
+
+    // Spawn the decoder thread.
+    thread::spawn(move || decode_input(queue_consumer, ring_buffer_producer));
+    // Spawn the audio thread.
+    thread::spawn(move || audio_output(ring_buffer_consumer));
+
+    // Enqueue any new URLs we receive from user input.
+    while let Some(url) = next_input() {
+        let source = StreamReader::new(url);
+        // Add the source to the queue.
+        queue_producer.enqueue(source);
+    }
+}
+```
+
+What did we gain from this solution? We can now start decoding content from each
+incoming source as soon as the first call to `read` completes. But is this
+enough?
+
+We still need to complete a round trip to the server every time the decoder
+requests data from the source. Some decoders may request data in small chunks -
+as little as a few kilobytes at a time. This could result in thousands of HTTP
+requests to finish decoding a single audio track. Again, this may be okay if
+both our client and server are sufficiently fast, but it's imperative that the
+decoder is able to work through the source quickly enough so that the audio
+stream never runs out of data. A few slow requests could be enough to cause
+stuttering.
+
+## Solution #3: Ahead-of-time Streaming
+
+We need something that combines the benefits of both solutions discussed so
+far - a way to support efficient data retrieval and minimal delay to start the
+process. To do this, we need to start downloading the content, begin decoding,
+and maintain a local cache of the data that allows for fast random access.
+
+We'll need a few things:
+
+- a new thread to download the content and store it in a temporary file
+- an implementation of `std::io::Read` and `std::io::Seek` that's aware of the
+  download progress
+- some way to share information between the two threads
+
+First, lets take a look at the new version of `StreamReader`. We have a
+temporary file that we'll use to store the downloaded content along with a
+`StreamProgress` struct that we'll use to track and interact with the stream
+download task.
+
+```rust
+struct StreamReader {
+    reader: TempFile,
+    stream_progress: StreamProgress,
+    content_length: u64,
+}
+
+impl StreamReader {
+    fn new(reader: TempFile, stream_progress: StreamProgress, content_length: u64) -> Self {
+        Self {
+            reader,
+            stream_progress,
+            content_length,
+        }
+    }
+}
+```
+
+Our `Read` implementation involves checking the current download progress and
+blocking the current thread until the download has progressed enough to fill the
+requested buffer.
+
+```rust
+impl std::io::Read for StreamReader {
+    fn read(&mut self, buffer: &mut [u8]) -> std::io::Result<usize> {
+        // Get our current position in the stream
+        let stream_position = self.reader.stream_position()?;
+        let requested_position = stream_position + buffer.len();
+
+        // Get the range of downloaded bytes that intersects the requested position
+        if let Some(closest_set) = self.stream_progress.intersection(requested_position) {
+            if closest_set.end >= requested_position {
+                // We've already downloaded the data we need.
+                // so we can just read it from the file.
+                return self.reader.read(buffer);
+            }
+        }
+        // Wait for the stream to download enough data.
+        // This blocks the thread until it completes.
+        self.stream_progress.request_position(requested_position);
+        self.stream_progress.wait_for_position();
+
+        return self.reader.read(buffer);
+    }
+}
+```
+
+The new implementation of `Seek` looks similar, except for the last part where
+we again need to ensure the download has progressed far enough for our operation
+to complete.
+
+```rust
+impl std::io::Seek for StreamReader {
+    fn seek(&mut self, relative_position: SeekFrom) -> std::io::Result<u64> {
+        let absolute_position = match position {
+            SeekFrom::Start(from_start) => {
+                self.position = from_start;
+            }
+            SeekFrom::Current(from_current) => {
+                self.position = self.position + from_current;
+            }
+            SeekFrom::End(from_end) => {
+                self.position = self.content_length + from_end;
+            }
+        };
+
+        // Check to see if we've already downloaded what we need.
+        if self.stream_handle.intersection(absolute_position).is_none() {
+            // If not, reset the stream to the requested position so we don't have to
+            // wait for the download to catch up.
+            self.stream_progress.request_seek(absolute_position);
+            // Wait for the stream to restart at our new position.
+            self.stream_progress.wait_for_position(requested_position);
+        }
+
+        return self.reader.seek(relative_position);
+    }
+}
+```
+
+Next, let's look at the implementation of `StreamProgress`. This is the
+structure we saw previously that will act as the bridge between our reader and
+downloader tasks.
+
+There are a few important data structures here. A `RangeSet` is a data structure
+that stores disjoint sets of numeric ranges. This is used to track our download
+progress. If no seek operations occur, we may only have one range in the set
+(`[0..current_progress]`), but if we perform any seek operations before the
+download finishes, there may be missing data in the middle. For example, if we
+download bytes `0` through `1000`, seek to `2000`, then download `1000` more
+bytes, the two ranges stored in our set will be `[0..1000, 2000..3000]`.
+
+Another data structure used here is the `Monitor`. This is an implementation of
+the [monitor pattern](https://en.wikipedia.org/wiki/Monitor_(synchronization))
+used to allow two threads to safely wait and signal for state changes. The
+implementation details of this structure are omitted for brevity.
+
+```rust
+struct StreamProgress {
+    downloaded_ranges: RangeSet<u64>,
+    requested_position: Option<u64>,
+    seek_tx: Sender<u64>,
+    monitor: Monitor,
+}
+
+impl StreamProgress {
+    fn new(seek_tx: Sender<u64>) -> Self {
+        Self {
+            downloaded_ranges: RangeSet::new(),
+            requested_position: None,
+            monitor: Monitor::new(),
+            seek_tx,
+        }
+    }
+    fn insert(&self, range: Range<u64>) {
+        // Store the download progress.
+        // Overlapping ranges are automatically unified.
+        //
+        // Example: if we have [0..12, 15..30] already stored and we add [10..20],
+        // the result becomes [0..30].
+        self.downloaded_ranges.insert(range);
+    }
+
+    fn intersection(&self, position: u64) -> Option<Range<u64>> {
+        // Returns the range that intersects the requested position
+        //
+        // Example: given ranges of [0..12, 15..30] and position = 17, it will return [15..30].
+        self.downloaded_ranges.get(position)
+    }
+
+    fn next_gap(&self, content_length: u64) -> Option<Range<u64>> {
+        // Finds the first gap in the range set, used for seeing what hasn't been downloaded yet.
+        //
+        // Example: given ranges of [0..12, 15..30], this will return [12..15]
+        self.downloaded_ranges.gaps(0..content_length).first()
+    }
+
+    fn notify_position_reached(&self) {
+        self.requested_position = None;
+        // Notify any waiters that we've reached the requested position
+        self.monitor.notify();
+    }
+
+    fn wait_for_position(&self) {
+        // Wait for the downloader thread to call notify()
+        self.monitor.wait();
+    }
+
+    fn request_position(&self, position: u64) {
+        self.requested_position = Some(position);
+    }
+
+    fn requested_position(&self) -> Option<u64> {
+        return self.requested_position;
+    }
+
+    fn request_seek(&self, position: u64) {
+        self.seek_tx.send(position);
+    }
+}
+```
+
+Finally, we have the `Downloader`, which will download the stream content
+concurrently while the `StreamReader` reads from a temp file. The general
+approach here is to download the content in small chunks, tracking the progress
+and responding to any seek requests along the way.
+
+```rust
+struct Downloader {
+    writer: TempFile,
+    stream_progress: StreamProgress,
+    seek_rx: std::sync::mpsc::Receiver<u64>,
+    content_length: u64,
+    http_client: HttpClient,
+}
+
+impl Downloader {
+    fn new(
+        writer: TempFile,
+        stream_progress: StreamProgress,
+        seek_rx: Receiver<u64>,
+        content_length: u64,
+        http_client: HttpClient,
+    ) {
+        Self {
+            writer,
+            stream_progress,
+            seek_rx,
+            content_length,
+            http_client,
+        }
+    }
+    fn download(&self) {
+        let stream = self.http_client.get(url).bytes();
+
+        loop {
+            while let Some(bytes) = stream.next() {
+                let position = self.writer.stream_position();
+
+                self.writer.write_all(bytes);
+                let new_position = position + bytes.len();
+                // Keep track of the byte ranges we've downloaded so far
+                self.stream_progress.insert(position..new_position);
+                // Check if the reader is waiting for a specific position
+                if let Some(requested_position) = self.stream_progress.requested_position() {
+                    if new_position >= requested_position {
+                        // Notify the reader that we've downloaded enough for
+                        // the read operation to succeed.
+                        self.stream_progress.notify_position_reached();
+                    }
+                }
+
+                if let Ok(seek_position) = self.seek_rx.try_recv() {
+                    stream = self.seek(seek_position);
+                }
+            }
+
+            // We finished the stream, but there could be some gaps missing due to
+            // seek requests.
+            if let Some(gap) = self.stream_progress.next_gap(self.content_length) {
+                stream = self.seek_range(gap.start);
+            } else {
+                break;
+            }
+        }
+    }
+
+    fn seek_range(&self, seek_position: u64) -> ByteStream {
+        // Restart the stream from the requested position.
+        let stream = self
+            .http_client
+            .header("Range", format!("bytes={}-", seek_position))
+            .get(self.url)
+            .bytes();
+        // Synchronize the writer with the new stream position.
+        self.writer.seek(SeekFrom::Start(seek_position));
+        return stream;
+    }
+}
+```
+
+Putting it together:
+
+```rust
+fn main() {
+    let (queue_producer, queue_consumer) = Queue::new();
+    let (ring_buffer_producer, ring_buffer_consumer) = RingBuffer::new();
+
+    // Spawn the decoder thread.
+    thread::spawn(move || decode_input(queue_consumer, ring_buffer_producer));
+    // Spawn the audio thread.
+    thread::spawn(move || audio_output(ring_buffer_consumer));
+
+    let http_client = HttpClient::new();
+    // Enqueue any new URLs we receive from user input.
+    while let Some(url) = next_input() {
+        let content_length: u64 = client.head(url).header("Content-Length").parse();
+        let (seek_tx, seek_rx) = channel();
+        let progress = StreamProgress::new(seek_tx);
+        let temp_file = TempFile::new();
+
+        let reader = StreamReader::new(temp_file, stream_progress, content_length);
+        let downloader = Downloader::new(
+            temp_file,
+            stream_progress,
+            seek_rx,
+            content_length,
+            http_client,
+        );
+        // Run the downloader and input reader concurrently
+        thread::spawn(move || downloader.download());
+        // Add the source to the queue.
+        queue_producer.enqueue(reader);
+    }
+}
+```
+
+## Appendix: Live Streaming and Bounded Storage
+
+There are some use cases which don't quite work with the previous
+implementation. We rely on knowing the content length to support some
+functionality such as seeking, but some streams don't have a content length.
+Consider something like internet radio - it has no finite length and therefore
+no `Content-Length` header present in the response.
+
+Since the stream doesn't have an end, seeking from the end of the stream no
+longer makes sense. Our logic to find gaps in the downloaded content no longer
+works since it requires knowledge of the stream length.
+
+There's also a bigger issue here that we need to consider. If we leave a single
+stream running for a long time, the space taken by our temporary file is going
+to continue to grow without bound. On computer with a large drive, this may be
+fine for any reasonable duration, but let's say we want to stream a radio
+station 24/7 on something like a Raspberry Pi. Our Pi may have a small SD card,
+so we could eventually fill up the storage. To get around this, we could
+implement a ring buffer over our storage layer that will overwrite older
+contents as we continue to receive more data.
+
+```rust
+struct TempFileRingBuffer {
+    size: usize,
+    file: TempFile,
+    read_position: usize,
+    write_position: usize,
+}
+
+impl CircularTempFile {
+    fn offset_read_position(&self, offset: usize) -> usize {
+        (offset + (self.read_position % self.size)) % self.size
+    }
+
+    fn offset_write_position(&self, offset: usize) -> usize {
+        (offset + (self.write_position % self.size)) % self.size
+    }
+}
+
+impl std::io::Read for TempFileRingBuffer {
+    fn read(&mut self, buffer: &mut [u8]) -> std::io::Result<usize> {
+        // We need to get the start and end read positions
+        // based on the current read position, the size of our circular buffer,
+        // and the size of the requested input.
+        let start = self.offset_read_position(0);
+        let end = self.offset_read_position(buffer.len() - 1) + 1;
+
+        self.file.seek(SeekFrom::Start(start));
+        if start < end {
+            let read_len = end - start;
+            self.file.read_exact(&mut buf[..read_len]);
+        } else {
+            // The buffer is non-contiguous, so we need to read the first segment
+            // until we reach the end of the buffer and then wrap around
+            // to the start to read the rest.
+            let first_seg_len = self.size - start;
+            self.file.read_exact(&mut buf[..first_seg_len]);
+            self.file.seek(SeekFrom::Start(0));
+            self.file.read_exact(&mut buf[first_seg_len..]);
+        }
+
+        self.read_position += buf.len();
+        return buf.len();
+    }
+}
+
+impl std::io::Write for TempFileRingBuffer {
+    fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
+        // This is essentially the same logic as the read method.
+        let start = self.offset_write_position(0);
+        let end = self.offset_write_position(buffer.len() - 1) + 1;
+
+        self.inner.seek(SeekFrom::Start(start));
+        if start < end {
+            self.inner.write_all(buf)
+        } else {
+            let first_seg_len = self.size - start;
+            self.file.write_all(&buf[..first_seg_len]);
+            self.file.seek(SeekFrom::Start(0));
+            self.file.write_all(&buf[first_seg_len..]);
+        }
+
+        self.write_position += buf.len();
+        return buf.len();
+    }
+}
+
+impl std::io::Seek for TempFileRingBuffer {
+    fn seek(&mut self, relative_position: SeekFrom) -> std::io::Result<u64> {
+        let new_position = match position {
+            SeekFrom::Start(position) => position,
+            SeekFrom::Current(from_current) => (self.current_write_position() + from_current),
+            SeekFrom::End(_) => {
+                // We can't support this since there is no logical end to the stream
+                return Err(io::Error::new(
+                    io::ErrorKind::Unsupported,
+                    "seek from end not supported",
+                ));
+            }
+        };
+
+        self.read_position = new_position;
+        return Ok(new_position);
+    }
+}
+```
+
+We start a new reader and downloader pair for every new input that comes in.
+This allows us to download multiple sources
+
+There are a few other considerations that aren't handled in our simple ring
+buffer implementation:
+
+- How do we prevent the writer from overwriting data when the reader falls
+  behind?
+- What happens if the requested data is larger than the size of the circular
+  buffer?
+- What do we do when there is no data available to read?
+
+## Conclusion
+
+This was a brief look at some of the scenarios that need to be considered when
+designing a media streaming application. We looked at three different approaches
+to handle these challenges, each with various tradeoffs between performance and
+complexity. For a full implementation of the final approach presented here,
+check out [the library](https://github.com/aschey/stream-download-rs) I created.
+Thanks!

@@ -7,6 +7,9 @@ import preact from "@astrojs/preact";
 import vercel from "@astrojs/vercel";
 import { loadEnv } from "vite";
 import process from "node:process";
+import { glob } from "glob";
+import * as path from "node:path";
+import { spawnSync } from "node:child_process";
 
 const { ENABLE_IMAGE_SERVICE } = loadEnv(
   process.env.NODE_ENV || "",
@@ -17,7 +20,44 @@ const { ENABLE_IMAGE_SERVICE } = loadEnv(
 export default defineConfig({
   site: "https://aschey.tech",
   output: "static",
-  integrations: [sitemap(), mdx(), preact({ compat: true, devtools: true })],
+  integrations: [
+    sitemap(),
+    mdx(),
+    preact({ compat: true, devtools: true }),
+    {
+      name: "build-d2",
+      hooks: {
+        "astro:server:setup": async ({ server }) => {
+          if (server.config.mode !== "development") {
+            return;
+          }
+
+          const buildDiagram = (/** @type {string} */ file) => {
+            const svgName = path.basename(file).replace(".d2", ".svg");
+            spawnSync(
+              "d2",
+              ["--dark-theme=200", file, `./src/assets/${svgName}`],
+              {
+                stdio: "inherit",
+              },
+            );
+          };
+
+          const d2Files = await glob("**/*.d2", { ignore: "node_modules/**" });
+          for (let file of d2Files) {
+            server.watcher.add(file);
+            buildDiagram(file);
+          }
+
+          server.watcher.on("change", (file) => {
+            if (file.endsWith(".d2")) {
+              buildDiagram(file);
+            }
+          });
+        },
+      },
+    },
+  ],
   vite: {
     plugins: [tailwindcss()],
   },

@@ -1,0 +1,12 @@
+vars: {
+  d2-config: {
+    sketch: true
+  }
+}
+
+shape: sequence_diagram
+
+audio source -> decoder: encoded audio data
+decoder -> ring buffer: write decoded PCM
+ring buffer -> audio thread: read PCM
+audio thread -> audio sink (OS): fill buffers
