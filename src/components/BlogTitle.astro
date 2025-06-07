@@ -3,13 +3,15 @@ interface Props {
   href: string;
   title: string;
   date: string;
+  description: string;
 }
-const { href, title, date } = Astro.props;
+const { href, title, date, description } = Astro.props;
 ---
 
 <div>
   <h2 class="mb-2">
     <a href={href}>{title}</a>
   </h2>
-  <div>{date}</div>
+  <div class="text-sm font-bold">{date}</div>
+  <div set:html={description} />
 </div>

@@ -1,14 +1,16 @@
 ---
-slug: media-streaming
 title: Media Streaming
-tags: [media]
+date: June 6th, 2025
+layout: ../../components/ContentBase.astro
 ---
 
 ## Intro
 
+<!--startdescription-->
+
 If you've used YouTube, Spotify, Netflix, or any similar apps before, you're
 probably familiar with the concept of media streaming. Embedding media content
-that can be loaded directly from some remote source is a common feature for apps
+that can be loaded directly from a remote source is a common feature for apps
 that support audio or video data. There are a number of libraries that can
 handle this - `ffmpeg`, `gstreamer`, and `mpv`, to name a few. These are heavy
 dependencies, however, and you may want to use something more lightweight.
@@ -22,6 +24,8 @@ post.
 
 We'll talk specifically about audio streaming here, but most of these concepts
 apply to other types of media as well.
+
+<!--enddescription-->
 
 ## Anatomy of an audio program
 

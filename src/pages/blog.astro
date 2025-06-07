@@ -1,6 +1,37 @@
 ---
 import Base from "../components/Base.astro";
-import BlogComponent from "../components/Blog.astro";
+import BlogTitle from "../components/BlogTitle.astro";
+
+const posts: any[] = Object.values(
+  import.meta.glob("./blog/*.md", { eager: true }),
+);
+
+const extractDescription = (html: string) => {
+  let takeLine = false;
+  let lines = [];
+  for (let line of html.split("\n")) {
+    if (line.trim() == "<!--startdescription-->") {
+      takeLine = true;
+      continue;
+    }
+    if (line.trim() == "<!--enddescription-->") {
+      break;
+    }
+
+    if (takeLine) {
+      lines.push(line);
+    }
+  }
+
+  return lines.join("\n");
+};
+const descriptionList = await Promise.all(
+  posts.map(async (p) => [
+    p.url,
+    extractDescription(await p.compiledContent()),
+  ]),
+);
+const postsWithDescriptions = Object.fromEntries(descriptionList);
 ---
 
 <Base>
@@ -8,7 +39,18 @@ import BlogComponent from "../components/Blog.astro";
     <div
       class="prose dark:prose-invert w-full prose-h2:flex prose-h2:flex-row prose-h2:items-center"
     >
-      <BlogComponent />
+      <h1>Blog Posts</h1>
+
+      {
+        posts.map((post) => (
+          <BlogTitle
+            href={post.url}
+            title={post.frontmatter.title}
+            date={post.frontmatter.date}
+            description={postsWithDescriptions[post.url]}
+          />
+        ))
+      }
     </div>
   </div>
 </Base>
