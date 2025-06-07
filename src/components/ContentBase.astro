@@ -8,8 +8,6 @@ const { frontmatter } = Astro.props;
     <div
       class="prose dark:prose-invert max-w-[90%] md:max-w-[min(1000px,80%)] prose-h2:flex prose-h2:flex-row prose-h2:items-center"
     >
-      <h1 class="mb-2">{frontmatter.title}</h1>
-      <div class="font-bold">{frontmatter.date}</div>
       <slot />
     </div>
   </div>

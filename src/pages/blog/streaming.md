@@ -1,7 +1,8 @@
 ---
 title: Media Streaming
 date: June 6th, 2025
-layout: ../../components/ContentBase.astro
+layout: ../../components/BlogBase.astro
+description: An overview of media streaming challenges and techniques
 ---
 
 ## Intro

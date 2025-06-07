@@ -1,5 +1,5 @@
 ---
-import Base from "../components/Base.astro";
+import ContentBase from "../components/ContentBase.astro";
 import BlogTitle from "../components/BlogTitle.astro";
 
 const posts: any[] = Object.values(
@@ -28,29 +28,23 @@ const extractDescription = (html: string) => {
 const descriptionList = await Promise.all(
   posts.map(async (p) => [
     p.url,
-    extractDescription(await p.compiledContent()),
+    p.frontmatter.description ?? extractDescription(await p.compiledContent()),
   ]),
 );
 const postsWithDescriptions = Object.fromEntries(descriptionList);
 ---
 
-<Base>
-  <div class="pt-18 md:pt-26 pb-6 px-6 w-full flex flex-col items-center">
-    <div
-      class="prose dark:prose-invert w-full prose-h2:flex prose-h2:flex-row prose-h2:items-center"
-    >
-      <h1>Blog Posts</h1>
+<ContentBase>
+  <h1>Blog Posts</h1>
 
-      {
-        posts.map((post) => (
-          <BlogTitle
-            href={post.url}
-            title={post.frontmatter.title}
-            date={post.frontmatter.date}
-            description={postsWithDescriptions[post.url]}
-          />
-        ))
-      }
-    </div>
-  </div>
-</Base>
+  {
+    posts.map((post) => (
+      <BlogTitle
+        href={post.url}
+        title={post.frontmatter.title}
+        date={post.frontmatter.date}
+        description={postsWithDescriptions[post.url]}
+      />
+    ))
+  }
+</ContentBase>

@@ -48,7 +48,7 @@
     --tw-prose-body: var(--color-primary);
 
     svg {
-        display: inline-block;
+        @apply inline-block;
     }
 
     h1,
@@ -57,7 +57,7 @@
     h4,
     h5,
     h6 {
-        font-family: 'MartianMono';
+        @apply font-[MartianMono];
     }
 
 }
@@ -65,6 +65,22 @@
 .dark .prose {
     --tw-prose-headings: var(--color-dark-primary);
     --tw-prose-body: var(--color-dark-primary);
+}
+
+
+.diff {
+    @apply w-full inline-block relative;
+}
+
+
+.diff.add::before {
+    @apply absolute w-full bg-lime-500/20 text-[#727169];
+    content: " ++";
+}
+
+.diff.remove::before {
+    @apply absolute w-full bg-red-500/20 text-[#727169];
+    content: " --";
 }
 
 html {

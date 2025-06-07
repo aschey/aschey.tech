@@ -10,6 +10,7 @@ import process from "node:process";
 import { glob } from "glob";
 import * as path from "node:path";
 import { spawnSync } from "node:child_process";
+import { transformerNotationDiff } from "@shikijs/transformers";
 
 const { ENABLE_IMAGE_SERVICE } = loadEnv(
   process.env.NODE_ENV || "",
@@ -20,6 +21,12 @@ const { ENABLE_IMAGE_SERVICE } = loadEnv(
 export default defineConfig({
   site: "https://aschey.tech",
   output: "static",
+  markdown: {
+    shikiConfig: {
+      theme: "kanagawa-wave",
+      transformers: [transformerNotationDiff()],
+    },
+  },
   integrations: [
     sitemap(),
     mdx(),

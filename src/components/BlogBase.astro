@@ -1,0 +1,10 @@
+---
+import ContentBase from "../components/ContentBase.astro";
+const { frontmatter } = Astro.props;
+---
+
+<ContentBase>
+  <h1 class="mb-2">{frontmatter.title}</h1>
+  <div class="font-bold">{frontmatter.date}</div>
+  <slot />
+</ContentBase>
