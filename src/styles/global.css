@@ -4,104 +4,99 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @font-face {
-    font-family: 'NunitoSans';
-    src: url('/fonts/NunitoSans.ttf') format('truetype');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
+  font-family: "NunitoSans";
+  src: url("/fonts/NunitoSans.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
 }
 
 @font-face {
-    font-family: 'MartianMono';
-    src: url('/fonts/MartianMono.ttf') format('truetype');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
+  font-family: "MartianMono";
+  src: url("/fonts/MartianMono.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
 }
 
 @theme {
-    --font-sans: 'NunitoSans', 'sans-serif';
-    --shadow-card: 4.0px 8.0px 8.0px hsl(0deg 0% 0% / 0.38);
+  --font-sans: "NunitoSans", "sans-serif";
+  --shadow-card: 4px 8px 8px hsl(0deg 0% 0% / 0.38);
 
-    --color-background: var(--color-gray-300);
-    --color-dark-background: var(--color-zinc-950);
+  --color-background: var(--color-gray-300);
+  --color-dark-background: var(--color-zinc-950);
 
-    --color-border-muted: oklch(0.7819 0.0093 258.34);
-    --color-dark-border-muted: var(--color-zinc-900);
+  --color-border-muted: oklch(0.7819 0.0093 258.34);
+  --color-dark-border-muted: var(--color-zinc-900);
 
-    --color-primary: var(--color-gray-950);
-    --color-dark-primary: var(--color-gray-300);
+  --color-primary: var(--color-gray-950);
+  --color-dark-primary: var(--color-gray-300);
 }
 
 @utility prose {
-    code {
-
-        &::before,
-        &::after {
-            content: none;
-        }
+  code {
+    &::before,
+    &::after {
+      content: none;
     }
+  }
 }
 
 .prose {
-    --tw-prose-headings: var(--color-primary);
-    --tw-prose-body: var(--color-primary);
+  --tw-prose-headings: var(--color-primary);
+  --tw-prose-body: var(--color-primary);
 
-    svg {
-        @apply inline-block;
-    }
+  svg {
+    @apply inline-block;
+  }
 
-    h1,
-    h2,
-    h3,
-    h4,
-    h5,
-    h6 {
-        @apply font-[MartianMono];
-    }
-
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-[MartianMono];
+  }
 }
 
 .dark .prose {
-    --tw-prose-headings: var(--color-dark-primary);
-    --tw-prose-body: var(--color-dark-primary);
+  --tw-prose-headings: var(--color-dark-primary);
+  --tw-prose-body: var(--color-dark-primary);
 }
-
 
 .diff {
-    @apply w-full inline-block relative;
+  @apply w-full inline-block relative;
 }
 
-
 .diff.add::before {
-    @apply absolute w-full bg-lime-500/20 text-[#727169];
-    content: " ++";
+  @apply absolute w-full bg-lime-500/20 text-[#727169];
+  content: " ++";
 }
 
 .diff.remove::before {
-    @apply absolute w-full bg-red-500/20 text-[#727169];
-    content: " --";
+  @apply absolute w-full bg-red-500/20 text-[#727169];
+  content: " --";
 }
 
 html {
-    color-scheme: light;
+  color-scheme: light;
 }
 
 html.dark {
-    color-scheme: dark;
+  color-scheme: dark;
 }
 
 :root {
-    --yarl__slide_captions_container_background: rgba(0, 0, 0, 0.75);
+  --yarl__slide_captions_container_background: rgba(0, 0, 0, 0.75);
 }
 
 /* Remove hyphens so words will wrap correctly */
 .yarl__slide_description_container .yarl__slide_description {
-    hyphens: none;
+  hyphens: none;
 }
-
 
 /* Allow click pass-through so tapping on the captions will hide them */
 .yarl__slide_captions_container {
-    pointer-events: none;
+  pointer-events: none;
 }
