@@ -11,6 +11,7 @@ import { glob } from "glob";
 import * as path from "node:path";
 import { spawnSync } from "node:child_process";
 import { transformerNotationDiff } from "@shikijs/transformers";
+import remarkGithubAlerts from "remark-github-alerts";
 
 const { ENABLE_IMAGE_SERVICE } = loadEnv(
   process.env.NODE_ENV || "",
@@ -26,6 +27,7 @@ export default defineConfig({
       theme: "kanagawa-wave",
       transformers: [transformerNotationDiff()],
     },
+    remarkPlugins: [remarkGithubAlerts],
   },
   integrations: [
     sitemap(),

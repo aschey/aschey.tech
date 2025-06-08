@@ -65,8 +65,16 @@
   --tw-prose-body: var(--color-dark-primary);
 }
 
+code {
+  @apply inline-block;
+}
+
+code span {
+  @apply w-full;
+}
+
 .diff {
-  @apply w-full inline-block relative;
+  @apply inline-block relative;
 }
 
 .diff.add::before {
@@ -89,6 +97,12 @@ html.dark {
 
 :root {
   --yarl__slide_captions_container_background: rgba(0, 0, 0, 0.75);
+  --color-note: var(--color-cyan-500);
+  --color-tip: var(--color-lime-500);
+  --color-warning: var(--color-orange-500);
+  --color-severe: var(--color-amber-500);
+  --color-caution: var(--color-red-500);
+  --color-important: var(--color-violet-500);
 }
 
 /* Remove hyphens so words will wrap correctly */

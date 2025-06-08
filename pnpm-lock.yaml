@@ -51,6 +51,9 @@ importers:
       preact:
         specifier: ^10.26.8
         version: 10.26.8
+      remark-github-alerts:
+        specifier: ^0.1.1
+        version: 0.1.1(@types/mdast@4.0.4)(unified@11.0.5)
       sharp:
         specifier: ^0.34.2
         version: 0.34.2
@@ -2474,6 +2477,12 @@ packages:
 
   remark-gfm@4.0.1:
     resolution: {integrity: sha512-1quofZ2RQ9EWdeN34S79+KExV1764+wCUGop5CPL1WGdD0ocPpu91lzPGbwWMECpEpd42kJGQwzRfyov9j4yNg==}
+
+  remark-github-alerts@0.1.1:
+    resolution: {integrity: sha512-A0NLfeAuu76ymiGIoEoBcHmqlPcdLFq+FoCGiWlzu8vkyhscyDv+pAkMA9paGr+OHpzpFflZKnsqOCvMESG/Uw==}
+    peerDependencies:
+      '@types/mdast': ^4.0.0
+      unified: ^11.0.0
 
   remark-mdx@3.1.0:
     resolution: {integrity: sha512-Ngl/H3YXyBV9RcRNdlYsZujAmhsxwzxpDzpDEhFBVAGthS4GDgnctpDjgFl/ULx5UEDzqtW1cyBSNKqYYrqLBA==}
@@ -5864,6 +5873,12 @@ snapshots:
       unified: 11.0.5
     transitivePeerDependencies:
       - supports-color
+
+  remark-github-alerts@0.1.1(@types/mdast@4.0.4)(unified@11.0.5):
+    dependencies:
+      '@types/mdast': 4.0.4
+      unified: 11.0.5
+      unist-util-visit: 5.0.0
 
   remark-mdx@3.1.0:
     dependencies:
