@@ -93,9 +93,15 @@ html.dark {
 
 :root {
     --yarl__slide_captions_container_background: rgba(0, 0, 0, 0.75);
-    --ifm-color-scheme: light;
 }
 
+/* Remove hyphens so words will wrap correctly */
 .yarl__slide_description_container .yarl__slide_description {
     hyphens: none;
+}
+
+
+/* Allow click pass-through so tapping on the captions will hide them */
+.yarl__slide_captions_container {
+    pointer-events: none;
 }

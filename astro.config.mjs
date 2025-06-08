@@ -41,13 +41,9 @@ export default defineConfig({
 
           const buildDiagram = (/** @type {string} */ file) => {
             const svgName = path.basename(file).replace(".d2", ".svg");
-            spawnSync(
-              "d2",
-              ["--dark-theme=200", file, `./src/assets/${svgName}`],
-              {
-                stdio: "inherit",
-              },
-            );
+            spawnSync("d2", [file, `./src/assets/${svgName}`], {
+              stdio: "inherit",
+            });
           };
 
           const d2Files = await glob("**/*.d2", { ignore: "node_modules/**" });
