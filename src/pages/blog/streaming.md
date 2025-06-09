@@ -5,9 +5,9 @@ layout: ../../components/BlogBase.astro
 description: An overview of media streaming challenges and techniques
 ---
 
-## Intro
+## Contents
 
-<!--startdescription-->
+## Intro
 
 If you've used YouTube, Spotify, Netflix, or any similar apps before, you're
 probably familiar with the concept of media streaming. Embedding media content
@@ -25,8 +25,6 @@ post.
 
 We'll talk specifically about audio streaming here, but most of these concepts
 apply to other types of media as well.
-
-<!--enddescription-->
 
 ## Anatomy of an audio program
 

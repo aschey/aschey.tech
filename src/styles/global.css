@@ -33,6 +33,7 @@
   --color-dark-primary: var(--color-gray-300);
 }
 
+/* Remove default style that adds backticks in code blocks */
 @utility prose {
   code {
     &::before,
@@ -46,17 +47,13 @@
   --tw-prose-headings: var(--color-primary);
   --tw-prose-body: var(--color-primary);
 
-  svg {
-    @apply inline-block;
-  }
-
   h1,
   h2,
   h3,
   h4,
   h5,
   h6 {
-    @apply font-[MartianMono];
+    @apply font-[MartianMono] scroll-mt-18 md:scroll-mt-26;
   }
 }
 
@@ -65,7 +62,8 @@
   --tw-prose-body: var(--color-dark-primary);
 }
 
-code {
+/* Make background diff color take the full width */
+.astro-code code {
   @apply inline-block;
 }
 
@@ -73,20 +71,22 @@ code span {
   @apply w-full;
 }
 
+/* Apply diff markers */
 .diff {
   @apply inline-block relative;
 }
 
 .diff.add::before {
   @apply absolute w-full bg-lime-500/20 text-[#727169];
-  content: " ++";
+  content: " +";
 }
 
 .diff.remove::before {
   @apply absolute w-full bg-red-500/20 text-[#727169];
-  content: " --";
+  content: " -";
 }
 
+/* Some third-party things may use this property to detect dark mode */
 html {
   color-scheme: light;
 }
@@ -96,7 +96,9 @@ html.dark {
 }
 
 :root {
+  /* Increase opacity so it's easier to read text on a light backdrop */
   --yarl__slide_captions_container_background: rgba(0, 0, 0, 0.75);
+  /* Github-style alert colors */
   --color-note: var(--color-cyan-500);
   --color-tip: var(--color-lime-500);
   --color-warning: var(--color-orange-500);
