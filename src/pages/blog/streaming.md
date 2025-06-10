@@ -139,6 +139,14 @@ fn main() {
     // Spawn the audio thread.
     thread::spawn(move || process_audio_output(consumer));
 
+    // [!code --:6]
+    // Enqueue any new files we receive from user input.
+    while let Some(path) = next_input() {
+        let file = File::open(path);
+        // Add the file to the queue.
+        queue_producer.enqueue(file);
+    }
+    // [!code ++:11]
     let client = HttpClient::new();
     // Enqueue any new URLs we receive from user input.
     while let Some(url) = next_input() {
@@ -281,8 +289,19 @@ fn main() {
     // Spawn the audio thread.
     thread::spawn(move || audio_output(ring_buffer_consumer));
 
+    // [!code --]
+    let client = HttpClient::new();
     // Enqueue any new URLs we receive from user input.
     while let Some(url) = next_input() {
+        // [!code --:7]
+        // Download temp_filehe whole file.
+        let bytes = client.get(url).bytes();
+        // Write the content to a temporary file.
+        let temp_file = TempFile::new();
+        temp_file.write_all(bytes);
+        // Add the file to the queue.
+        queue_producer.enqueue(temp_file);
+        // [!code ++:3]
         let source = StreamReader::new(url);
         // Add the source to the queue.
         queue_producer.enqueue(source);
@@ -578,11 +597,18 @@ fn main() {
     let http_client = HttpClient::new();
     // Enqueue any new URLs we receive from user input.
     while let Some(url) = next_input() {
+        // [!code --:3]
+        let source = StreamReader::new(url);
+        // Add the source to the queue.
+        queue_producer.enqueue(source);
+
+        // [!code ++:4]
         let content_length: u64 = client.head(url).header("Content-Length").parse();
         let (seek_tx, seek_rx) = channel();
         let progress = StreamProgress::new(seek_tx);
         let temp_file = TempFile::new();
 
+        // [!code ++:12]
         let reader = StreamReader::new(temp_file, stream_progress, content_length);
         let downloader = Downloader::new(
             temp_file,
