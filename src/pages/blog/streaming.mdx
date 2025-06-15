@@ -345,10 +345,18 @@ and maintain a local cache of the data that allows for fast random access.
 
 We'll need a few things:
 
-- a new thread to download the content and store it in a temporary file
-- an implementation of `std::io::Read` and `std::io::Seek` that's aware of the
+- a `Downloader` struct - will run in a new thread to download the content and store it in a temporary file
+- a new version of `StreamReader` that's aware of the
   download progress
-- some way to share information between the two threads
+- a `StreamProgress` struct to share information between the two threads
+
+When we're done, the flow will look like this:
+
+<Image
+  src={aot_streaming}
+  class="lightbox-img cursor-pointer"
+  alt="audio program workflow"
+/>
 
 First, lets take a look at the new version of `StreamReader`. We have a
 temporary file that we'll use to store the downloaded content along with a
@@ -596,13 +604,9 @@ impl Downloader {
 }
 ```
 
-Putting it together:
-
-<Image
-  src={aot_streaming}
-  class="lightbox-img cursor-pointer"
-  alt="audio program workflow"
-/>
+And now we update our main loop to use the `Downloader`. We'll start a new reader
+and downloader pair for every new input that comes in.
+This allows us to download multiple sources simultaneously.
 
 ```rust
 fn main() {
@@ -645,9 +649,6 @@ fn main() {
 }
 ```
 
-We start a new reader and downloader pair for every new input that comes in.
-This allows us to download multiple sources simultaneously.
-
 ## Appendix: Live Streaming and Bounded Storage
 
 There are some use cases which don't quite work with the previous
@@ -677,7 +678,7 @@ struct TempFileRingBuffer {
     write_position: usize,
 }
 
-impl CircularTempFile {
+impl TempFileRingBuffer {
     fn offset_read_position(&self, offset: usize) -> usize {
         (offset + (self.read_position % self.size)) % self.size
     }

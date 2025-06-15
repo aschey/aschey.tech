@@ -58,15 +58,16 @@ const postsWithDescriptions = Object.fromEntries(descriptionList);
 
 <ContentBase>
   <h1>Blog Posts</h1>
-
-  {
-    posts.map((post) => (
-      <BlogTitle
-        href={post.url}
-        title={post.frontmatter.title}
-        date={post.frontmatter.date}
-        description={postsWithDescriptions[post.url]}
-      />
-    ))
-  }
+  <ul>
+    {
+      posts.map((post) => (
+        <BlogTitle
+          href={post.url}
+          title={post.frontmatter.title}
+          date={post.frontmatter.date}
+          description={postsWithDescriptions[post.url]}
+        />
+      ))
+    }
+  </ul>
 </ContentBase>

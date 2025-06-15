@@ -10,7 +10,9 @@ const { href, title, date, description } = Astro.props;
 
 <div>
   <h2 class="mb-2">
-    <a href={href}>{title}</a>
+    <li>
+      <a href={href}>{title}</a>
+    </li>
   </h2>
   <div class="text-sm font-bold">{date}</div>
   <div set:html={description} />

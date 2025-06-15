@@ -24,13 +24,18 @@
   --shadow-card: 4px 8px 8px hsl(0deg 0% 0% / 0.38);
 
   --color-background: var(--color-gray-300);
-  --color-dark-background: var(--color-zinc-950);
-
   --color-border-muted: oklch(0.7819 0.0093 258.34);
-  --color-dark-border-muted: var(--color-zinc-900);
-
   --color-primary: var(--color-gray-950);
-  --color-dark-primary: var(--color-gray-300);
+  --color-accent: var(--color-blue-900);
+  --color-accent-muted: var(--color-blue-700);
+}
+
+.dark {
+  --color-background: var(--color-zinc-950);
+  --color-border-muted: var(--color-zinc-900);
+  --color-primary: var(--color-gray-300);
+  --color-accent: var(--color-cyan-400);
+  --color-accent-muted: var(--color-cyan-600);
 }
 
 /* Remove default style that adds backticks in code blocks */
@@ -45,6 +50,10 @@
 
 html {
   @apply md:text-[18px];
+}
+
+ul {
+  @apply marker:text-accent;
 }
 
 .prose {

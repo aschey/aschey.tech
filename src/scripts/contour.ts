@@ -17,10 +17,9 @@ const darkModeEnabled = () =>
   document.documentElement.classList.contains("dark");
 const isDarkInit = darkModeEnabled();
 
-const getColorVector = (isDark: boolean) => {
+const getColorVector = () => {
   let styles = getComputedStyle(document.documentElement);
-  let styleName = isDark ? "--color-dark-background" : "--color-background";
-  let style = styles.getPropertyValue(styleName);
+  let style = styles.getPropertyValue("--color-background");
   let color = new Color(style).to("srgb");
   return new Vector3(color.r * 255, color.g * 255, color.b * 255);
 };
@@ -35,7 +34,7 @@ const material = new ShaderMaterial({
       value: new Vector2(window.innerWidth, window.innerHeight),
     },
     bgColor: {
-      value: getColorVector(isDarkInit),
+      value: getColorVector(),
     },
     colorMult: {
       value: isDarkInit ? 1.0 : -1.0,
@@ -77,7 +76,7 @@ const animate = (timestamp: DOMHighResTimeStamp) => {
   const isDark = darkModeEnabled();
 
   if (isDark !== wasDark) {
-    material.uniforms["bgColor"].value = getColorVector(isDark);
+    material.uniforms["bgColor"].value = getColorVector();
     if (isDark) {
       material.uniforms["colorMult"].value = 1.0;
     } else {
