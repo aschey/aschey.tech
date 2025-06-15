@@ -10,9 +10,11 @@ import process from "node:process";
 import { glob } from "glob";
 import * as path from "node:path";
 import { spawnSync } from "node:child_process";
+import { readFileSync } from "node:fs";
 import { transformerNotationDiff } from "@shikijs/transformers";
 import remarkGithubAlerts from "remark-github-alerts";
 import remarkToc from "remark-toc";
+import sharp from "sharp";
 
 const { ENABLE_IMAGE_SERVICE } = loadEnv(
   process.env.NODE_ENV || "",
@@ -42,22 +44,25 @@ export default defineConfig({
             return;
           }
 
-          const buildDiagram = (/** @type {string} */ file) => {
+          const buildDiagram = async (/** @type {string} */ file) => {
             const svgName = path.basename(file).replace(".d2", ".svg");
+            const webpName = path.basename(file).replace(".d2", ".webp");
             spawnSync("d2", [file, `./src/assets/${svgName}`], {
               stdio: "inherit",
             });
+            const svgData = readFileSync(`src/assets/${svgName}`);
+            await sharp(svgData).toFile(`src/assets/${webpName}`);
           };
 
           const d2Files = await glob("**/*.d2", { ignore: "node_modules/**" });
           for (let file of d2Files) {
             server.watcher.add(file);
-            buildDiagram(file);
+            await buildDiagram(file);
           }
 
-          server.watcher.on("change", (file) => {
+          server.watcher.on("change", async (file) => {
             if (file.endsWith(".d2")) {
-              buildDiagram(file);
+              await buildDiagram(file);
             }
           });
         },

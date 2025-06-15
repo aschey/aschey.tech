@@ -4,6 +4,18 @@ import BaseHead from "../components/BaseHead.astro";
 import Navbar from "../components/Navbar.astro";
 ---
 
+<script>
+  import { imageIndex } from "../scripts/image.ts";
+  const setIndex = (index: number) => {
+    imageIndex.set(index);
+  };
+  for (const [i, value] of Array.from(
+    document.getElementsByClassName("lightbox-img"),
+  ).entries()) {
+    value.addEventListener("click", () => setIndex(i));
+  }
+</script>
+
 <html lang="en">
   <head>
     <BaseHead title="Austin Schey" description="Austin Schey's personal site" />

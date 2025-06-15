@@ -43,6 +43,10 @@
   }
 }
 
+html {
+  @apply md:text-[18px];
+}
+
 .prose {
   --tw-prose-headings: var(--color-primary);
   --tw-prose-body: var(--color-primary);

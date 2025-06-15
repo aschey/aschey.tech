@@ -1,25 +1,35 @@
 ---
-title: Media Streaming
+title: Complexities of Media Streaming
 date: June 6th, 2025
 layout: ../../components/BlogBase.astro
-description: An overview of media streaming challenges and techniques
 ---
+
+import { Image } from "astro:assets";
+import Lightbox from "../../components/Lightbox";
+import audio from "../../assets/audio.svg";
+import audio_webp from "../../assets/audio.webp";
+import aot_streaming from "../../assets/aot_streaming.svg";
+import aot_streaming_webp from "../../assets/aot_streaming.webp";
 
 ## Contents
 
 ## Intro
 
-If you've used YouTube, Spotify, Netflix, or any similar apps before, you're
-probably familiar with the concept of media streaming. Embedding media content
-that can be loaded directly from a remote source is a common feature for apps
-that support audio or video data. There are a number of libraries that can
-handle this - `ffmpeg`, `gstreamer`, and `mpv`, to name a few. These are heavy
-dependencies, however, and you may want to use something more lightweight.
+<span class="startdescription hidden" /> If you've used YouTube, Spotify,
+Netflix, or any similar apps before, you're probably familiar with the concept
+of media streaming. Embedding media content that can be loaded directly from a
+remote source is a common feature for apps that support audio or video data.
+There are a number of libraries that can handle this -
+[`ffmpeg`](https://ffmpeg.org),
+[`gstreamer`](https://gstreamer.freedesktop.org), and [`mpv`](https://mpv.io),
+to name a few. However, these are heavy dependencies, and you may want to use
+something more lightweight.
 
 It can be fairly easy to create something that works under optimal conditions,
 but an efficient solution that handles edge cases correctly can be deceptively
 complicated due to the number of concurrency-related challenges you may
-encounter. I created [a library](https://github.com/aschey/stream-download-rs)
+encounter. <span class="enddescription hidden" /> I created
+[a library](https://github.com/aschey/stream-download-rs)
 to solve this specific problem and I'll talk a bit about how it works in this
 post.
 
@@ -46,7 +56,11 @@ A typical audio program will consist of several components:
 
 Putting it all together, the flow looks something like this:
 
-![audio program diagram](../../assets/audio.svg)
+<Image
+  src={audio}
+  class="lightbox-img cursor-pointer"
+  alt="audio program workflow"
+/>
 
 > [!NOTE]
 > A detailed description of how an audio decoder works is outside the scope of
@@ -167,10 +181,10 @@ This is a simple solution that may be adequate under the following conditions:
 - Your client has a fast, reliable internet connection
 - The server has good upload speeds
 
-However, this solution is problematic unless all of these points hold. It's not
-very efficient to wait for the entire file to download before decoding any of
-the contents. What if you need to download a
-[30-minute audio file](https://www.youtube.com/watch?v=NyUMHEua7-A) and your
+However, this solution is problematic unless **all** of these points hold. It's
+not very efficient to wait for the entire file to download before decoding any
+of the contents. What if you need to download a
+[thirty-minute audio file](https://www.youtube.com/watch?v=NyUMHEua7-A) and your
 connection speed suddenly slows down? You could be waiting several minutes for
 the source to start playing.
 
@@ -434,7 +448,7 @@ download bytes `0` through `1000`, seek to `2000`, then download `1000` more
 bytes, the two ranges stored in our set will be `[0..1000, 2000..3000]`.
 
 Another data structure used here is the `Monitor`. This is an implementation of
-the [monitor pattern](https://en.wikipedia.org/wiki/Monitor_(synchronization))
+the [monitor pattern](<https://en.wikipedia.org/wiki/Monitor_(synchronization)>)
 used to allow two threads to safely wait and signal for state changes. The
 implementation details of this structure are omitted for brevity.
 
@@ -584,6 +598,12 @@ impl Downloader {
 
 Putting it together:
 
+<Image
+  src={aot_streaming}
+  class="lightbox-img cursor-pointer"
+  alt="audio program workflow"
+/>
+
 ```rust
 fn main() {
     let (queue_producer, queue_consumer) = Queue::new();
@@ -624,6 +644,9 @@ fn main() {
     }
 }
 ```
+
+We start a new reader and downloader pair for every new input that comes in.
+This allows us to download multiple sources simultaneously.
 
 ## Appendix: Live Streaming and Bounded Storage
 
@@ -732,9 +755,6 @@ impl std::io::Seek for TempFileRingBuffer {
 }
 ```
 
-We start a new reader and downloader pair for every new input that comes in.
-This allows us to download multiple sources
-
 There are a few other considerations that aren't handled in our simple ring
 buffer implementation:
 
@@ -752,3 +772,9 @@ to handle these challenges, each with various tradeoffs between performance and
 complexity. For a full implementation of the final approach presented here,
 check out [the library](https://github.com/aschey/stream-download-rs) I created.
 Thanks!
+
+<Lightbox
+  client:only="preact"
+  showCaptions={false}
+  images={[audio_webp, aot_streaming_webp]}
+/>

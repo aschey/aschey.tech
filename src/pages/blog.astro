@@ -1,20 +1,41 @@
 ---
 import ContentBase from "../components/ContentBase.astro";
 import BlogTitle from "../components/BlogTitle.astro";
+import { experimental_AstroContainer } from "astro/container";
+import { loadRenderers } from "astro:container";
+import mdxRenderer from "@astrojs/mdx/server.js";
+import preactRenderer from "@astrojs/preact/server.js";
+const container = await experimental_AstroContainer.create();
+container.addServerRenderer({ name: mdxRenderer.name, renderer: mdxRenderer });
+container.addServerRenderer({
+  name: preactRenderer.name,
+  renderer: preactRenderer,
+});
+container.addClientRenderer({
+  name: "@astrojs/preact",
+  entrypoint: "@astrojs/preact/client.js",
+});
 
 const posts: any[] = Object.values(
-  import.meta.glob("./blog/*.md", { eager: true }),
+  import.meta.glob("./blog/*.md*", { eager: true }),
 );
 
 const extractDescription = (html: string) => {
+  const startDescription = '<span class="startdescription hidden"></span>';
+  const endDescription = '<span class="enddescription hidden"></span>';
+
   let takeLine = false;
   let lines = [];
   for (let line of html.split("\n")) {
-    if (line.trim() == "<!--startdescription-->") {
+    const startIndex = line.indexOf(startDescription);
+    if (startIndex > -1) {
+      lines.push("<p>" + line.substring(startIndex + startDescription.length));
       takeLine = true;
       continue;
     }
-    if (line.trim() == "<!--enddescription-->") {
+    const endIndex = line.indexOf(endDescription);
+    if (endIndex > -1) {
+      lines.push(line.substring(0, endIndex));
       break;
     }
 
@@ -28,7 +49,8 @@ const extractDescription = (html: string) => {
 const descriptionList = await Promise.all(
   posts.map(async (p) => [
     p.url,
-    p.frontmatter.description ?? extractDescription(await p.compiledContent()),
+    p.frontmatter.description ??
+      extractDescription(await container.renderToString(p.default)),
   ]),
 );
 const postsWithDescriptions = Object.fromEntries(descriptionList);

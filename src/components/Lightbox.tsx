@@ -5,7 +5,7 @@ import Lightbox, {
 import Zoom from "yet-another-react-lightbox/plugins/zoom";
 import Captions from "yet-another-react-lightbox/plugins/captions";
 import { useStore } from "@nanostores/preact";
-import { galleryIndex } from "../scripts/gallery.ts";
+import { imageIndex } from "../scripts/image.ts";
 import { useRef, type MutableRef } from "preact/hooks";
 
 import "yet-another-react-lightbox/styles.css";
@@ -15,14 +15,13 @@ interface Props {
   images: ImageMetadata[];
 }
 
-const Gallery = ({ images }: Props) => {
-  const $galleryIndex = useStore(galleryIndex);
+const LightboxComponent = ({ images }: Props) => {
+  const $imageIndex = useStore(imageIndex);
   const zoomRef: MutableRef<ZoomRef | null> = useRef(null);
   const captionsRef: MutableRef<CaptionsRef | null> = useRef(null);
-
   return (
     <Lightbox
-      index={$galleryIndex}
+      index={$imageIndex}
       plugins={[Zoom, Captions]}
       zoom={{ ref: zoomRef }}
       captions={{
@@ -32,8 +31,9 @@ const Gallery = ({ images }: Props) => {
         showToggle: true,
       }}
       slides={images}
-      open={$galleryIndex >= 0}
-      close={() => galleryIndex.set(-1)}
+      open={$imageIndex >= 0}
+      close={() => imageIndex.set(-1)}
+      render={{ buttonPrev: () => null, buttonNext: () => null }}
       on={{
         click: () => {
           (captionsRef.current?.visible
@@ -45,4 +45,4 @@ const Gallery = ({ images }: Props) => {
   );
 };
 
-export default Gallery;
+export default LightboxComponent;
