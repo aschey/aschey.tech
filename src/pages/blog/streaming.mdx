@@ -679,7 +679,7 @@ and downloader pair for every new input that comes in.
 This allows us to download multiple sources simultaneously.
 
 ```rust
-fn main() {
+async fn main() {
     let (queue_producer, queue_consumer) = Queue::new();
     let (ring_buffer_producer, ring_buffer_consumer) = RingBuffer::new();
 

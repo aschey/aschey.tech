@@ -1,4 +1,6 @@
 ---
+import Date from "../assets/calendar.svg";
+
 interface Props {
   href: string;
   title: string;
@@ -14,7 +16,10 @@ const { href, title, date, description } = Astro.props;
       <a href={href}>{title}</a>
     </li>
   </h2>
-  <div class="text-sm font-bold">{date}</div>
+  <div class="flex flex-row h-[1em]">
+    <Date class="text-secondary" />
+    <div class="text-sm font-bold px-2">{date}</div>
+  </div>
   <div set:html={description} />
   <a class="text-lg" href={href}>Read More</a>
 </div>
