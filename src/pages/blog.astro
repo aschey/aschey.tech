@@ -2,9 +2,9 @@
 import ContentBase from "../components/ContentBase.astro";
 import BlogTitle from "../components/BlogTitle.astro";
 import { experimental_AstroContainer } from "astro/container";
-import { loadRenderers } from "astro:container";
 import mdxRenderer from "@astrojs/mdx/server.js";
 import preactRenderer from "@astrojs/preact/server.js";
+
 const container = await experimental_AstroContainer.create();
 container.addServerRenderer({ name: mdxRenderer.name, renderer: mdxRenderer });
 container.addServerRenderer({
@@ -49,14 +49,14 @@ const extractDescription = (html: string) => {
 const descriptionList = await Promise.all(
   posts.map(async (p) => [
     p.url,
-    p.frontmatter.description ??
+    p.frontmatter.blogDescription ??
       extractDescription(await container.renderToString(p.default)),
   ]),
 );
 const postsWithDescriptions = Object.fromEntries(descriptionList);
 ---
 
-<ContentBase>
+<ContentBase title="Austin Schey's Blog" description="Blog Posts">
   <h1>Blog Posts</h1>
   <ul>
     {

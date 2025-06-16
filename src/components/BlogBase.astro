@@ -4,7 +4,7 @@ import "remark-github-alerts/styles/github-base.css";
 const { frontmatter } = Astro.props;
 ---
 
-<ContentBase>
+<ContentBase frontmatter={frontmatter}>
   <h1 class="mb-2">{frontmatter.title}</h1>
   <div class="font-bold">{frontmatter.date}</div>
   <slot />
