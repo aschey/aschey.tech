@@ -210,8 +210,8 @@ to avoid requesting the entire file contents each time. Using the `Range`
 header, we can ask for a specific range of bytes, which can yield significant
 performance improvements for larger content.
 
-Implementing the [`std::io::Read`](https://doc.rust-lang.org/std/io/trait.Read.html) interface allows us to fill a buffer with our
-input data whenever the caller requests it.
+Implementing the [`std::io::Read`](https://doc.rust-lang.org/std/io/trait.Read.html)
+interface allows us to fill a buffer with our input data whenever the caller requests it.
 
 ```rust
 use std::io;
@@ -238,11 +238,11 @@ impl StreamReader {
 }
 
 impl io::Read for StreamReader {
-    fn read(&mut self, buffer: &mut [u8]) -> io::Result<usize> {
+    fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
         let start = self.position;
         // Byte ranges are inclusive, so we have to subtract 1 from the length
         // to get the end value.
-        let end = (start + buffer.len()).min(self.content_length) - 1;
+        let end = (start + buf.len()).min(self.content_length) - 1;
 
         // Send a request for the next chunk of data only
         let bytes = self
@@ -253,7 +253,7 @@ impl io::Read for StreamReader {
 
         let bytes_len = bytes.len();
         // Fill the buffer with the response data.
-        buffer[..bytes_len].copy_from_slice(&bytes);
+        buf[..bytes_len].copy_from_slice(&bytes);
         // Update our stream position.
         self.position += bytes_len;
 
@@ -394,17 +394,17 @@ requested buffer.
 use std::io;
 
 impl std::io::Read for StreamReader {
-    fn read(&mut self, buffer: &mut [u8]) -> io::Result<usize> {
+    fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
         // Get our current position in the stream
         let stream_position = self.reader.stream_position()?;
-        let requested_position = stream_position + buffer.len();
+        let requested_position = stream_position + buf.len();
 
         // Get the range of downloaded bytes that intersects the requested position
         if let Some(closest_set) = self.stream_progress.intersection(requested_position) {
             if closest_set.end >= requested_position {
                 // We've already downloaded the data we need.
                 // so we can just read it from the file.
-                return self.reader.read(buffer);
+                return self.reader.read(buf);
             }
         }
         // Wait for the stream to download enough data.
@@ -412,7 +412,7 @@ impl std::io::Read for StreamReader {
         self.stream_progress.request_position(requested_position);
         self.stream_progress.wait_for_position();
 
-        self.reader.read(buffer)
+        self.reader.read(buf)
     }
 }
 ```
@@ -540,8 +540,8 @@ struct StreamProgress {
 }
 
 impl StreamProgress {
-    // Can use relaxed ordering since we're not using these for thread synchronization
     fn notify_position_reached(&self) {
+        // Can use relaxed ordering since we're not using these for thread synchronization
         self.requested_position.store(-1, Ordering::Relaxed);
         // Notify any waiters that we've reached the requested position
         let (mutex, cvar) = self.monitor.as_ref();
@@ -566,7 +566,8 @@ impl StreamProgress {
             !waiter.stream_done && !waiter.position_reached
         });
 
-        // If we're not done downloading yet, reset the position_reached variable before we unlock the mutex.
+        // If we're not done downloading yet, reset the position_reached
+        // variable before we unlock the mutex.
         // This will ensure any subsequent calls to this method continue to block appropriately.
         if !waiter.stream_done {
             waiter.position_reached = false;
