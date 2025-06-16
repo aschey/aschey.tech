@@ -26,8 +26,8 @@
   --color-background: var(--color-gray-300);
   --color-border-muted: oklch(0.7819 0.0093 258.34);
   --color-primary: var(--color-gray-950);
-  --color-accent: var(--color-blue-900);
-  --color-accent-muted: var(--color-blue-700);
+  --color-accent: var(--color-cyan-700);
+  --color-accent-muted: var(--color-cyan-500);
 }
 
 .dark {
@@ -112,6 +112,15 @@ html.dark {
   /* Increase opacity so it's easier to read text on a light backdrop */
   --yarl__slide_captions_container_background: rgba(0, 0, 0, 0.75);
   /* Github-style alert colors */
+  --color-note: var(--color-cyan-700);
+  --color-tip: var(--color-lime-700);
+  --color-warning: var(--color-orange-700);
+  --color-severe: var(--color-amber-700);
+  --color-caution: var(--color-red-700);
+  --color-important: var(--color-violet-700);
+}
+
+.dark {
   --color-note: var(--color-cyan-500);
   --color-tip: var(--color-lime-500);
   --color-warning: var(--color-orange-500);
