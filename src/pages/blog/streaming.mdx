@@ -52,7 +52,8 @@ A typical audio program will consist of several components:
   very quickly to avoid creating discontinuities in the output stream so it's
   best to avoid any expensive operations such as memory allocation or blocking
   I/O.
-- **Audio sink** - sends raw audio data to the audio output device.
+- **Audio sink** - sends raw audio data to the audio output device
+  controlled by the OS.
 
 Putting it all together, the flow looks something like this:
 
@@ -360,7 +361,7 @@ When we're done, the flow will look like this:
 <Image
   src={aot_streaming}
   class="lightbox-img cursor-pointer"
-  alt="audio program workflow"
+  alt="ahead-of-time streaming diagram"
 />
 
 First, lets take a look at the new version of `StreamReader`. We have a
@@ -737,7 +738,7 @@ works since it requires knowledge of the stream length.
 
 There's also a bigger issue here that we need to consider. If we leave a single
 stream running for a long time, the space taken by our temporary file is going
-to continue to grow without bound. On computer with a large drive, this may be
+to continue to grow without bound. On a computer with a large drive, this may be
 fine for any reasonable duration, but let's say we want to stream a radio
 station 24/7 on something like a Raspberry Pi. Our Pi may have a small SD card,
 so we could eventually fill up the storage. To get around this, we could
@@ -760,20 +761,22 @@ struct RingBufState {
 impl RingBufState {
     // Get the read position relative to the buffer size
     // This will wrap around on overflow
-    fn offset_read_position(&self, val: usize) -> usize {
-        (val + (self.read_position % self.size)) % self.size
+    fn offset_read_position(&self, read_len: usize) -> usize {
+        let current_relative_read_position = self.read_position % self.size;
+        (current_relative_read_position + read_len) % self.size
     }
 
     // Same thing for the write position
-    fn offset_write_position(&self, val: usize) -> usize {
-        (val + (self.write_position % self.size)) % self.size
+    fn offset_write_position(&self, write_len: usize) -> usize {
+        let current_relative_write_position = self.write_position % self.size;
+        (current_relative_write_position + write_len) % self.size
     }
 }
 ```
 
 `RingBufReader` reads from a fixed-size file, wrapping around
 to the beginning when it reaches the end. The writer needs to
-supply enough data so it doesn't re-read old data during subsequent
+supply enough data so it doesn't re-read old segments during subsequent
 iterations.
 
 ```rust
@@ -820,6 +823,7 @@ impl io::Seek for RingBufReader {
             SeekFrom::Current(from_current) => {
                 (shared_info.read_position as i64 + from_current) as usize
             }
+            // Seeking from the end doesn't make sense with infinite streams
             SeekFrom::End(_) => {
                 return Err(io::Error::new(
                     io::ErrorKind::Unsupported,
@@ -873,9 +877,8 @@ impl io::Seek for RingBufWriter {
         let new_position = match position {
             SeekFrom::Start(position) => position as usize,
             SeekFrom::Current(from_current) => {
-                ((shared_info.write_position as i64) + from_current) as usize
+                (shared_info.write_position as i64 + from_current) as usize
             }
-            // Seeking from the end doesn't make sense with infinite streams
             SeekFrom::End(_) => {
                 return Err(io::Error::new(
                     io::ErrorKind::Unsupported,
@@ -887,6 +890,29 @@ impl io::Seek for RingBufWriter {
         shared_info.write_position = new_position;
         Ok(new_position as u64)
     }
+}
+```
+
+To use it, we need a method that returns both the reader and writer.
+
+```rust
+fn ring_buf_reader_writer(buffer_size: usize) -> (RingBufReader, RingBufWriter) {
+    let state = Arc::new(Mutex::new(RingBufState {
+        read_position: 0,
+        write_position: 0,
+        size: buffer_size,
+    }));
+    let temp_file = TempFile::new();
+    let reader = RingBufReader {
+        state: state.clone(),
+        file: temp_file.clone(),
+    };
+    let writer = RingBufWriter {
+        state,
+        file: temp_file,
+    };
+
+    return (reader, writer);
 }
 ```
 

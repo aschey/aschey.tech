@@ -7,7 +7,7 @@ vars: {
 
 shape: sequence_diagram
 
-audio source -> decoder: encoded audio data
-decoder -> ring buffer: write decoded PCM
+audio source -> decoder thread: encoded audio data
+decoder thread-> ring buffer: write decoded PCM
 ring buffer -> audio thread: read PCM
 audio thread -> audio sink (OS): fill buffers

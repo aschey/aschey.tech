@@ -5,7 +5,7 @@ vars: {
   }
 }
 
-main loop -> Downloader: spawn thread
+main loop -> Downloader: spawn task
 main loop -> StreamReader: add to queue
 Downloader -> StreamProgress: update progress
 StreamReader -> StreamProgress: request position
