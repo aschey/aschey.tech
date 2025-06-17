@@ -24,20 +24,20 @@ There are a number of libraries that can handle this -
 [`ffmpeg`](https://ffmpeg.org),
 [`gstreamer`](https://gstreamer.freedesktop.org), and [`mpv`](https://mpv.io),
 to name a few. However, these are heavy dependencies, and you may want to use
-something more lightweight.
+something more lightweight and easy to embed in your app.
 
 It can be fairly easy to create something that works under optimal conditions,
 but an efficient solution that handles edge cases correctly can be deceptively
-complicated due to the number of concurrency-related challenges you may
+complicated due to the number of concurrency-related challenges you'll
 encounter. <span class="enddescription hidden" /> I created
-[a library](https://github.com/aschey/stream-download-rs)
+[a Rust library](https://github.com/aschey/stream-download-rs)
 to solve this specific problem and I'll talk a bit about how it works in this
 post.
 
 We'll talk specifically about audio streaming here, but most of these concepts
 apply to other types of media as well.
 
-## Anatomy of an audio program
+## Background: Anatomy of an audio program
 
 A typical audio program will consist of several components:
 
@@ -50,10 +50,10 @@ A typical audio program will consist of several components:
   sending slices of binary data between threads.
 - **Audio thread** - receives PCM data from the ring buffer and invokes the
   operating system's API for controlling the audio sink. This needs to happen
-  very quickly to avoid creating discontinuities in the output stream so it's
+  very quickly to avoid creating discontinuities in the output stream, so it's
   best to avoid any expensive operations such as memory allocation or blocking
   I/O.
-- **Audio sink** - sends raw audio data to the audio output device
+- **Audio sink** - sends PCM data to the audio output device
   controlled by the OS.
 
 Putting it all together, the flow looks something like this:
@@ -66,7 +66,7 @@ Putting it all together, the flow looks something like this:
 
 > [!NOTE]
 > A detailed description of how an audio decoder works is outside the scope of
-> this post. The example here is meant to convey the high-level concepts.
+> this post. The example here is meant to convey the basic concepts.
 
 Let's look at a high-level example of a simple audio program that decodes a list of files
 from some user input and plays them in order. We'll use a queue to send file
@@ -201,10 +201,9 @@ the source to start playing.
 
 ## Solution #2: Just-in-time Streaming
 
-So far, we've exclusively used file objects as input for our audio decoder, but
+So far, we've exclusively used files as input for our audio decoder, but
 this isn't strictly necessary. A robust decoder library should be able to
-operate on a generic interface for reading bytes rather than a concrete
-implementation.
+operate on a generic interface for reading bytes rather than being coupled with file objects.
 
 Our custom I/O source can utilize
 [HTTP range requests](https://developer.mozilla.org/en-US/docs/Web/HTTP/Range_requests)
@@ -352,10 +351,11 @@ and maintain a local cache of the data that allows for fast random access.
 
 We'll need a few things:
 
-- a `Downloader` struct - will run in a new thread to download the content and store it in a temporary file
+- a `Downloader` struct - we'll spawn this as a separate task to download the content
+  and store it in a temporary file.
 - a new version of `StreamReader` that's aware of the
-  download progress
-- a `StreamProgress` struct to share information between the two threads
+  download progress.
+- a `StreamProgress` struct to share information between the two threads.
 
 When we're done, the flow will look like this:
 
@@ -455,10 +455,11 @@ structure we saw previously that will act as the bridge between our reader and
 downloader tasks.
 
 First, we'll add the logic required to track the download progress.
-We'll use a data structure called a `RangeSet` for this - it stores disjoint sets of numeric ranges.
+We'll use something called a `RangeSet` for this - a data structure for storing
+disjoint sets of numeric ranges.
 If no seek operations occur, we may only have one range in the set (`[0..current_progress]`),
 but if we perform any seek operations before the download finishes, there may be missing data in the middle.
-For example, if we download bytes `0` through `1000`, seek to `2000`, then download `1000` more
+For example, if we download bytes `0` through `1000`, seek forward to `2000`, then download `1000` more
 bytes, the two ranges stored in our set will be `[0..1000, 2000..3000]`.
 
 ```rust
@@ -482,7 +483,7 @@ struct Waiter {
 impl StreamProgress {
     fn new(seek_tx: mpsc::Sender<u64>) -> Self {
         Self {
-            downloaded_ranges: Arc::new(RwLock::new(RangeSet::new())),
+            downloaded_ranges: Default::default(),
             requested_position: Arc::new(AtomicI64::new(-1)),
             seek_tx,
             monitor: Default::default(),
@@ -522,9 +523,10 @@ impl StreamProgress {
 }
 ```
 
-Another data structure used here is the `monitor`. This is an implementation of
+Next, we'll add a few methods to allow us the downloader and reader to communicate.
+Another new data structure used here is the `monitor`. This is an implementation of
 the [monitor pattern](<https://en.wikipedia.org/wiki/Monitor_(synchronization)>)
-used to allow two threads to safely wait and signal for state changes.
+used to allow multiple threads to safely wait and signal for state changes.
 
 > [!Note]
 > We use [`parking_lot`](https://docs.rs/parking_lot/latest/parking_lot/struct.Condvar.html)'s
@@ -594,7 +596,7 @@ impl StreamProgress {
 
 Finally, we have the `Downloader`, which will download the stream content
 concurrently while the `StreamReader` reads from a temp file. The general
-approach here is to download the content in small chunks, tracking the progress
+approach here is to stream the content in small chunks, tracking the progress
 and responding to any seek requests along the way.
 
 ```rust
@@ -628,11 +630,22 @@ impl Downloader {
         let stream = self.http_client.get(self.url).await.bytes_stream();
 
         loop {
+            // Concurrently handle seek requests while downloading
             tokio::select! {
                 seek_position = self.seek_rx.recv() => {
                     stream = self.seek(seek_position);
                 }
                 bytes = stream.next() => {
+                    let Some(bytes) = bytes else {
+                        // We finished the stream, but there could be some gaps missing due to
+                        // seek requests.
+                        if let Some(gap) = self.stream_progress.next_gap(self.content_length) {
+                            stream = self.seek_range(gap.start)?;
+                        } else {
+                            self.stream_progress.notify_stream_done();
+                            break;
+                        }
+                    };
                     let position = self.writer.stream_position()?;
 
                     self.writer.write_all(bytes)?;
@@ -648,15 +661,6 @@ impl Downloader {
                         }
                     }
                 }
-            }
-
-            // We finished the stream, but there could be some gaps missing due to
-            // seek requests.
-            if let Some(gap) = self.stream_progress.next_gap(self.content_length) {
-                stream = self.seek_range(gap.start)?;
-            } else {
-                self.stream_progress.notify_stream_done();
-                break;
             }
         }
     }
