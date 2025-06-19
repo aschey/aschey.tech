@@ -32,14 +32,13 @@ complicated due to the number of concurrency-related challenges you'll
 encounter. <span class="enddescription hidden" /> I created
 [a Rust library](https://github.com/aschey/stream-download-rs)
 to solve this specific problem and I'll talk a bit about how it works in this
-post.
-
-We'll talk specifically about audio streaming here, but most of these concepts
+post. We'll talk specifically about audio streaming here, but most of these concepts
 apply to other types of media as well.
 
 ## Background: Anatomy of an audio program
 
-A typical audio program will consist of several components:
+Let's look at an example architecture for a simple audio program.
+Our audio application will consist of several components:
 
 - **Audio source** - source for encoded audio data (usually a file or a URL)
 - **Decoder thread** - reads encoded audio data from the source, decodes it into
@@ -68,10 +67,10 @@ Putting it all together, the flow looks something like this:
 > A detailed description of how an audio decoder works is outside the scope of
 > this post. The example here is meant to convey the basic concepts.
 
-Let's look at a high-level example of a simple audio program that decodes a list of files
+We'll create a simple audio program that decodes a list of files
 from some user input and plays them in order. We'll use a queue to send file
-objects from the main thread to the decoder and a simple ring buffer to send
-decoded PCM data from the decoder to the audio output device.
+objects from the main thread to the decoder and a ring buffer to send
+decoded PCM data from the decoder to the audio output device, as described above.
 
 > [!NOTE]
 > The code used throughout this article is simplified to avoid being overly
@@ -101,47 +100,49 @@ async fn main() -> Result<()> {
 fn decode_input(
     queue_consumer: QueueConsumer<File>,
     ring_buffer_producer: RingBufferProducer<f32>,
-) {
+) -> Result<()> {
     // Keep processing inputs until the queue is closed.
     while let Some(file) = queue_consumer.dequeue() {
-        let decoder = Decoder::new(file);
+        let mut decoder = Decoder::new(file);
         // We need to iterate through the file and decode one chunk at a time,
         // so we can fill the output stream as quickly as possible.
         while !decoder.is_finished() {
             // Decode the next chunk of data from the file.
-            decoder.decode_next_chunk();
+            decoder.decode_next_chunk()?;
             // Read the decoded samples from the decoder and
             // write them into the ring buffer.
             // This will block until there's space available.
 
             // (the word "sample" refers to a single data point in the stream)
-            ring_buffer_producer.write(decoder.decoded_samples());
+            ring_buffer_producer.write(decoder.decoded_samples())?;
         }
     }
+    Ok(())
 }
 
-fn process_audio_output(ring_buffer_consumer: RingBufferConsumer<f32>) {
-    let audio_device = AudioOutputDevice::new();
-    audio_device.start_output_stream();
+fn process_audio_output(ring_buffer_consumer: RingBufferConsumer<f32>) -> Result<()> {
+    let mut audio_device = AudioOutputDevice::new()?;
+    audio_device.start_output_stream()?;
     let mut buf = Vec::new();
     loop {
         // Poll the audio device and wait for the next buffer to become available.
-        let buffer_size = audio_device.poll_next_buffer();
+        let buffer_size = audio_device.poll_next_buffer()?;
         // Ensure the buffer has the correct size.
         buf.resize(buffer_size);
         // Read as many samples as possible from the ring buffer.
-        let written = ring_buffer_consumer.read(&mut buf);
+        let written = ring_buffer_consumer.read(&mut buf)?;
         // Mute the remaining samples to prevent any noise.
         buf[written..].iter_mut().for_each(|s| *s = 0);
         // Write them to the audio device.
-        audio_device.write_buffer(&buf);
+        audio_device.write_buffer(&buf)?;
     }
+    Ok(())
 }
 ```
 
 This architecture works fine if you already have the complete contents available
-in some structure that can be read synchronously (usually a file), but this is
-not the case when streaming from a remote server.
+in a file that can be read synchronously, but this is not the case when streaming
+content from a remote server.
 
 Let's talk about some solutions for handling this, in order of increasing
 complexity.
@@ -179,7 +180,7 @@ async fn main() -> Result<()> {
         let temp_file = TempFile::new();
         temp_file.write_all(bytes)?;
         // Add the file to the queue.
-        queue_producer.enqueue(temp_file);
+        queue_producer.enqueue(temp_file.into_file());
     }
 
     Ok(())
@@ -189,7 +190,7 @@ async fn main() -> Result<()> {
 This is a simple solution that may be adequate under the following conditions:
 
 - Your files are small
-- Your client has a fast, reliable internet connection
+- Your user has a fast, reliable internet connection
 - The server has good upload speeds
 
 However, this solution is problematic unless **all** of these points hold. It's
@@ -243,13 +244,15 @@ impl io::Read for StreamReader {
         let start = self.position;
         // Byte ranges are inclusive, so we have to subtract 1 from the length
         // to get the end value.
+        // We also need to check to ensure we don't request data past
+        // the end of the stream.
         let end = (start + buf.len()).min(self.content_length) - 1;
 
         // Send a request for the next chunk of data only
         let bytes = self
             .client
             .header("Range", format!("bytes={start}-{end}"))
-            .get(self.url)
+            .get_blocking(self.url)
             .bytes();
 
         let bytes_len = bytes.len();
@@ -265,8 +268,7 @@ impl io::Read for StreamReader {
 
 Decoders also need to be able to perform [`seek`](https://doc.rust-lang.org/std/io/trait.Seek.html)
 operations to move to different locations within the file. Decoders can issue seek requests for a variety of
-reasons, such as detecting the codec used to encode the content or responding to
-a fast forward or rewind command.
+reasons, such as a fast forward or rewind operation.
 
 All we need to do here is update our current position. The next call to `read`
 will request data from the new position.
@@ -294,7 +296,8 @@ impl io::Seek for StreamReader {
 ```
 
 To use our new `HttpSource`, we need to change our main loop to instantiate a
-new source for each URL we receive, but almost everything else remains
+new source for each URL we receive. We'll also change our queue to accept any
+type implementing `io::Read` and `io::Seek`. Almost everything else remains
 unchanged.
 
 ```rust
@@ -327,6 +330,21 @@ async fn main() -> Result<()> {
 
     Ok(())
 }
+
+// [!code --:4]
+fn decode_input(
+    queue_consumer: QueueConsumer<File>,
+    ring_buffer_producer: RingBufferProducer<f32>,
+) -> Result<()> {
+// [!code ++:6]
+fn decode_input<T>(
+    queue_consumer: QueueConsumer<T>,
+    ring_buf_producer: RingBufferProducer<f32>
+) -> Result<()>
+where T: io::Read + io::Seek
+{
+    ...
+}
 ```
 
 What did we gain from this solution? We can now start decoding content from each
@@ -338,7 +356,7 @@ requests data from the source. Some decoders may request data in small chunks -
 as little as a few kilobytes at a time. This could result in thousands of HTTP
 requests to finish decoding a single audio track. Again, this may be okay if
 both our client and server are sufficiently fast, but it's imperative that the
-decoder is able to work through the source quickly enough so that the audio
+decoder is able to work through the source quickly so that the audio
 stream never runs out of data. A few slow requests could be enough to cause
 stuttering.
 
@@ -626,14 +644,17 @@ impl Downloader {
         }
     }
 
-    async fn download(&self) -> Result<()> {
-        let stream = self.http_client.get(self.url).await.bytes_stream();
+    async fn download(&mut self) -> Result<()> {
+        // Stream the content in small chunks over a single connection.
+        // This is more efficient than sending range requests, which requires opening and closing
+        // a connection for every request.
+        let mut stream = self.http_client.get(self.url).await.bytes_stream();
 
         loop {
             // Concurrently handle seek requests while downloading
             tokio::select! {
                 seek_position = self.seek_rx.recv() => {
-                    stream = self.seek(seek_position);
+                    stream = self.seek_range(seek_position)?;
                 }
                 bytes = stream.next() => {
                     let Some(bytes) = bytes else {
@@ -665,7 +686,7 @@ impl Downloader {
         }
     }
 
-    fn seek_range(&self, seek_position: u64) -> Result<ByteStream> {
+    fn seek_range(&mut self, seek_position: u64) -> Result<ByteStream> {
         // Restart the stream from the requested position.
         let stream = self
             .http_client
@@ -711,7 +732,7 @@ async fn main() {
 
         // [!code ++:6]
         let reader = StreamReader::new(temp_file, stream_progress.clone(), content_length);
-        let downloader = Downloader::new(url, temp_file, stream_progress, seek_rx);
+        let mut downloader = Downloader::new(url, temp_file, stream_progress, seek_rx);
         // Run the downloader and input reader concurrently
         tokio::task::spawn(downloader.download());
         // Add the source to the queue.
@@ -726,6 +747,9 @@ There's a few other considerations that we haven't addressed here:
 - Pre-fetching data - when we first start playing, we may not have much of a buffer.
   Waiting to start playback until a set amount of data has finished downloading reduces
   the chance of stuttering at the beginning of the stream.
+- `seek_range` doesn't set the end position, causing the entire stream to be downloaded from the
+  new starting point. We could be more efficient by detecting subsequent portions that were already
+  downloaded.
 - Cancelling background tasks if the user stops the stream.
 - Handling transient network failures.
 
@@ -743,7 +767,7 @@ works since it requires knowledge of the stream length.
 
 There's also a bigger issue here that we need to consider. If we leave a single
 stream running for a long time, the space taken by our temporary file is going
-to continue to grow without bound. On a computer with a large drive, this may be
+to continue to grow indefinitely. On a computer with a large drive, this may be
 fine for any reasonable duration, but let's say we want to stream a radio
 station 24/7 on something like a Raspberry Pi. Our Pi may have a small SD card,
 so we could eventually fill up the storage. To get around this, we could
