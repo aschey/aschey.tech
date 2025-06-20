@@ -242,9 +242,9 @@ impl StreamReader {
 impl io::Read for StreamReader {
     fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
         let start = self.position;
-        // Byte ranges are inclusive, so we have to subtract 1 from the length
-        // to get the end value.
-        // We also need to check to ensure we don't request data past
+        // Range headers use inclusive upper bounds,
+        // so we have to subtract 1 from the length to get the end value.
+        // We also need to ensure we don't request data past
         // the end of the stream.
         let end = (start + buf.len()).min(self.content_length) - 1;
 
@@ -268,7 +268,7 @@ impl io::Read for StreamReader {
 
 Decoders also need to be able to perform [`seek`](https://doc.rust-lang.org/std/io/trait.Seek.html)
 operations to move to different locations within the file. Decoders can issue seek requests for a variety of
-reasons, such as a fast forward or rewind operation.
+reasons, such as fast forward or rewind operations.
 
 All we need to do here is update our current position. The next call to `read`
 will request data from the new position.
