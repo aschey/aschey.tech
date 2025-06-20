@@ -331,20 +331,21 @@ async fn main() -> Result<()> {
     Ok(())
 }
 
-// [!code --:4]
-fn decode_input(
-    queue_consumer: QueueConsumer<File>,
-    ring_buffer_producer: RingBufferProducer<f32>,
-) -> Result<()> {
-// [!code ++:6]
-fn decode_input<T>(
-    queue_consumer: QueueConsumer<T>,
-    ring_buf_producer: RingBufferProducer<f32>
-) -> Result<()>
-where T: io::Read + io::Seek
-{
-    ...
-}
+    // [!code --:4]
+    fn decode_input(
+        queue_consumer: QueueConsumer<File>,
+        ring_buffer_producer: RingBufferProducer<f32>,
+    ) -> Result<()> {
+    // [!code ++:7]
+    fn decode_input<T>(
+        queue_consumer: QueueConsumer<T>,
+        ring_buf_producer: RingBufferProducer<f32>,
+    ) -> Result<()>
+    where
+        T: io::Read + io::Seek,
+    {
+      ...
+    }
 ```
 
 What did we gain from this solution? We can now start decoding content from each
@@ -460,7 +461,7 @@ impl io::Seek for StreamReader {
             // wait for the download to catch up.
             self.stream_progress.request_seek(absolute_position);
             // Wait for the stream to restart at our new position.
-            self.stream_progress.wait_for_position(requested_position);
+            self.stream_progress.wait_for_position();
         }
 
         self.reader.seek(position)
