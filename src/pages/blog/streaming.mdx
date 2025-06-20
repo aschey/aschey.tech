@@ -413,14 +413,14 @@ requested buffer.
 ```rust
 use std::io;
 
-impl std::io::Read for StreamReader {
+impl io::Read for StreamReader {
     fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
         // Get our current position in the stream
         let stream_position = self.reader.stream_position()?;
         let requested_position = stream_position + buf.len();
 
-        // Get the range of downloaded bytes that intersects the requested position
-        if let Some(closest_set) = self.stream_progress.intersection(requested_position) {
+        // Get the range of downloaded bytes that intersects the current position
+        if let Some(closest_set) = self.stream_progress.intersection(stream_position) {
             if closest_set.end >= requested_position {
                 // We've already downloaded the data we need.
                 // so we can just read it from the file.
