@@ -445,7 +445,7 @@ to complete.
 use std::io::{self, SeekFrom};
 
 impl io::Seek for StreamReader {
-    fn seek(&mut self, relative_position: SeekFrom) -> io::Result<u64> {
+    fn seek(&mut self, position: SeekFrom) -> io::Result<u64> {
         let absolute_position = match position {
             SeekFrom::Start(from_start) => from_start,
             SeekFrom::Current(from_current) => {
@@ -463,7 +463,7 @@ impl io::Seek for StreamReader {
             self.stream_progress.wait_for_position(requested_position);
         }
 
-        self.reader.seek(relative_position)
+        self.reader.seek(position)
     }
 }
 ```
@@ -845,7 +845,7 @@ impl io::Read for RingBufReader {
 }
 
 impl io::Seek for RingBufReader {
-    fn seek(&mut self, relative_position: SeekFrom) -> io::Result<u64> {
+    fn seek(&mut self, position: SeekFrom) -> io::Result<u64> {
         let mut shared_info = self.shared_info.lock();
         let new_position = match position {
             SeekFrom::Start(position) => position as usize,
