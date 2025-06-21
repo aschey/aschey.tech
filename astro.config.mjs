@@ -21,13 +21,16 @@ const { ENABLE_IMAGE_SERVICE } = loadEnv(
   process.cwd(),
   "",
 );
+
+const kanagawaWave = JSON.parse(readFileSync("kanagawa-wave.json", "utf8"));
+
 // https://astro.build/config
 export default defineConfig({
   site: "https://aschey.tech",
   output: "static",
   markdown: {
     shikiConfig: {
-      theme: "kanagawa-wave",
+      theme: kanagawaWave,
       transformers: [transformerNotationDiff()],
     },
     remarkPlugins: [remarkGithubAlerts, remarkToc],
