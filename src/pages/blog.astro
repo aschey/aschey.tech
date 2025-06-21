@@ -1,6 +1,7 @@
 ---
 import ContentBase from "../components/ContentBase.astro";
 import BlogTitle from "../components/BlogTitle.astro";
+import { formatDate } from "../scripts/dateUtil.ts";
 import { experimental_AstroContainer } from "astro/container";
 import mdxRenderer from "@astrojs/mdx/server.js";
 import preactRenderer from "@astrojs/preact/server.js";
@@ -64,12 +65,7 @@ const postsWithDescriptions = Object.fromEntries(descriptionList);
         <BlogTitle
           href={post.url}
           title={post.frontmatter.title}
-          date={new Date(post.frontmatter.date).toLocaleDateString("en-US", {
-            year: "numeric",
-            month: "long",
-            day: "2-digit",
-            timeZone: "UTC",
-          })}
+          date={formatDate(post.frontmatter.date)}
           description={postsWithDescriptions[post.url]}
         />
       ))

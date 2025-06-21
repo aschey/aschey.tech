@@ -1,5 +1,5 @@
 ---
-import Date from "../assets/calendar.svg";
+import Calendar from "../assets/calendar.svg";
 
 interface Props {
   href: string;
@@ -17,7 +17,7 @@ const { href, title, date, description } = Astro.props;
     </li>
   </h2>
   <div class="flex flex-row h-[1em]">
-    <Date class="text-secondary" />
+    <Calendar class="text-secondary" />
     <div class="text-sm font-bold px-2">{date}</div>
   </div>
   <div set:html={description} />
