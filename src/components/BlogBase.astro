@@ -9,7 +9,7 @@ const { frontmatter } = Astro.props;
 <ContentBase frontmatter={frontmatter}>
   <h1 class="mb-4">{frontmatter.title}</h1>
   <div class="flex flex-row h-[1.5em] items-center">
-    <Calendar class="text-secondary h-[80%]" />
+    <Calendar class="text-secondary h-[80%]" aria-hidden="true" />
     <div class="font-bold pl-2">{formatDate(frontmatter.date)}</div>
   </div>
   <slot />
