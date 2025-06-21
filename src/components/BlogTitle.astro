@@ -17,7 +17,7 @@ const { href, title, date, description } = Astro.props;
     </div>
   </h2>
   <div class="flex flex-row h-[1em]">
-    <Calendar class="text-secondary" />
+    <Calendar class="text-secondary" aria-hidden="true" />
     <div class="text-sm font-bold px-2">{date}</div>
   </div>
   <div set:html={description} />
