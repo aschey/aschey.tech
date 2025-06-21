@@ -26,7 +26,7 @@ const kanagawaWave = JSON.parse(readFileSync("kanagawa-wave.json", "utf8"));
 
 // https://astro.build/config
 export default defineConfig({
-  site: "https://aschey.tech",
+  site: "https://www.aschey.tech",
   output: "static",
   markdown: {
     shikiConfig: {
