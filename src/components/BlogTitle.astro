@@ -10,16 +10,16 @@ interface Props {
 const { href, title, date, description } = Astro.props;
 ---
 
-<div>
+<li>
   <h2 class="mb-2">
-    <li>
+    <div>
       <a href={href}>{title}</a>
-    </li>
+    </div>
   </h2>
   <div class="flex flex-row h-[1em]">
     <Calendar class="text-secondary" />
     <div class="text-sm font-bold px-2">{date}</div>
   </div>
   <div set:html={description} />
-  <a class="text-lg" href={href}>Read More</a>
-</div>
+  <a class="text-lg" href={href}>Full Article</a>
+</li>
