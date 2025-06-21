@@ -5,6 +5,7 @@ import NavbarItem from "./NavbarItem.astro";
 import Hamburger from "./Hamburger.astro";
 import HamburgerLink from "./HamburgerLink.astro";
 import Title from "./Title.astro";
+import Rss from "./Rss.astro";
 
 const links = [
   { title: "Home", href: "/" },
@@ -35,7 +36,8 @@ const links = [
           {links.map((l) => <NavbarItem href={l.href}>{l.title}</NavbarItem>)}
         </div>
       </div>
-      <span class="flex justify-end w-full">
+      <span class="flex justify-end w-full h-8">
+        <Rss />
         <ThemeIcon />
       </span>
     </Card>
@@ -62,8 +64,9 @@ const links = [
   <div class="w-full justify-center items-center content-center">
     <Title />
   </div>
-  <div class="pr-1">
+  <div class="flex pr-4 justify-center">
     <ThemeIcon />
+    <Rss />
   </div>
 </div>
 
