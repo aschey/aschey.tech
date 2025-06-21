@@ -90,6 +90,10 @@ const images = [
         <GalleryImage {...images[4]} classList={["md:w-[20vw]"]} />
       </div>
     </div>
-    <Lightbox images={images.map((i) => i.img)} client:only="preact" />
+    <Lightbox
+      images={images.map((i) => i.img)}
+      showCaptions
+      client:only="preact"
+    />
   </div>
 </Base>

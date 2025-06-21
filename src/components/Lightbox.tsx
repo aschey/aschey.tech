@@ -13,16 +13,17 @@ import "yet-another-react-lightbox/plugins/captions.css";
 
 interface Props {
   images: ImageMetadata[];
+  showCaptions: boolean;
 }
 
-const LightboxComponent = ({ images }: Props) => {
+const LightboxComponent = ({ images, showCaptions }: Props) => {
   const $imageIndex = useStore(imageIndex);
   const zoomRef: MutableRef<ZoomRef | null> = useRef(null);
   const captionsRef: MutableRef<CaptionsRef | null> = useRef(null);
   return (
     <Lightbox
       index={$imageIndex}
-      plugins={[Zoom, Captions]}
+      plugins={showCaptions ? [Zoom, Captions] : [Zoom]}
       zoom={{ ref: zoomRef }}
       captions={{
         descriptionTextAlign: "center",
